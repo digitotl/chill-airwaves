@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
+
+// adsterra banner ad
 const BannerAd = () => {
   const bannerRef = useRef<HTMLDivElement>(null);
 
