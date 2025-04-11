@@ -62,6 +62,42 @@ const createWindow = () => {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
+  // Intercept navigation events and open external links in default browser
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Open all external URLs in the default browser
+    shell.openExternal(url);
+    return { action: 'deny' }; // Prevent opening in Electron
+  });
+
+  // Handle will-navigate events for ad iframes
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    // Parse the URL to check if it's external
+    try {
+      const urlObj = new URL(url);
+
+      // Consider internal navigation if:
+      // 1. It's a development server URL
+      // 2. It's localhost/127.0.0.1
+      // 3. It's a file:// URL (local file in the app)
+      // 4. It's using the app's custom protocol
+      const isInternalNavigation =
+        (MAIN_WINDOW_VITE_DEV_SERVER_URL && url.startsWith(MAIN_WINDOW_VITE_DEV_SERVER_URL)) ||
+        urlObj.hostname === 'localhost' ||
+        urlObj.hostname === '127.0.0.1' ||
+        urlObj.protocol === 'file:' ||
+        urlObj.protocol === `${APP_PROTOCOL}:`;
+
+      // If it's not internal navigation, open in external browser
+      if (!isInternalNavigation) {
+        event.preventDefault();
+        shell.openExternal(url);
+      }
+    } catch (error) {
+      // If URL parsing fails, assume it's internal and allow navigation
+      console.log('Error parsing URL:', error);
+    }
+  });
+
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
