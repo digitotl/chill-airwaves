@@ -87,56 +87,59 @@ export const Player = () => {
       transition={{ duration: 2 }}
     >
       <div className="h-screen w-full text-white flex flex-col">
-        <BackgroundImageOverlay backgroundImageUrl={"https://cdn.midjourney.com/aeb9cae2-47e3-4edf-97b1-5170e511429f/0_0.png"} />
+        <div className="relative flex flex-1">
+          <BackgroundImageOverlay backgroundImageUrl={"https://cdn.midjourney.com/aeb9cae2-47e3-4edf-97b1-5170e511429f/0_0.png"} />
 
-        <button className="absolute top-4 right-4 z-10" onClick={() => openSettingsModal()}>
-          <Gear size={28} />
-        </button>
+          <button className="absolute top-4 right-4 z-10" onClick={() => openSettingsModal()}>
+            <Gear size={28} />
+          </button>
 
-        <div className="flex-grow items-center flex relative flex-col bg-gradient-to-t from-black to-transparent p-20 overflow-hidden backdrop-blur-sm">
-          <div className="flex-grow flex flex-col justify-center" style={{ width: '400px', maxWidth: '500px' }}>
-            <StationSelector isLoading={atcSourceLoading} onClick={console.log} airportName={selectedAirport?.name || ''} />
+          <div className="flex-grow items-center flex relative flex-col bg-gradient-to-t from-black to-transparent p-20 overflow-hidden backdrop-blur-sm">
+            <div className="flex-grow flex flex-col justify-center" style={{ width: '400px', maxWidth: '500px' }}>
+              <StationSelector isLoading={atcSourceLoading} onClick={console.log} airportName={selectedAirport?.name || ''} />
 
-            <Radar
-              onPaused={console.log}
-              onTrackEnd={() => dispatch(nextAtcTrack())}
-              onTrackError={() => dispatch(nextAtcTrack())}
-              onCanPlay={() => setAtcSourceLoading(false)}
-              onLoadStart={() => setAtcSourceLoading(true)}
-              airport={selectedAirport}
-              atcSource={currentAtcTrack}
-            />
+              <Radar
+                onPaused={console.log}
+                onTrackEnd={() => dispatch(nextAtcTrack())}
+                onTrackError={() => dispatch(nextAtcTrack())}
+                onCanPlay={() => setAtcSourceLoading(false)}
+                onLoadStart={() => setAtcSourceLoading(true)}
+                airport={selectedAirport}
+                atcSource={currentAtcTrack}
+              />
 
-            <MusicPlayer
-              onPause={pauseTrack}
-              onPlay={playTrack}
-              onNextTrack={nextTrack}
-              onPreviousTrack={previousTrack}
-              onVolumeChange={setVolume}
-              imageUrl={videoInfo?.thumbnail_url}
-              trackName={videoInfo?.title || ''}
-              authorName={getAutorName(videoInfo?.author_name) || ''}
-              spotifyLink={'http://google.com'}
-              youtubeLink={'http://gogole.com'}
-              isPlaying={isPlayng}
-              isBuffering={isBuffering}
-            />
+              <MusicPlayer
+                onPause={pauseTrack}
+                onPlay={playTrack}
+                onNextTrack={nextTrack}
+                onPreviousTrack={previousTrack}
+                onVolumeChange={setVolume}
+                imageUrl={videoInfo?.thumbnail_url}
+                trackName={videoInfo?.title || ''}
+                authorName={getAutorName(videoInfo?.author_name) || ''}
+                spotifyLink={'http://google.com'}
+                youtubeLink={'http://gogole.com'}
+                isPlaying={isPlayng}
+                isBuffering={isBuffering}
+              />
+            </div>
+
           </div>
 
-        </div>
+          {!isAppUnlocked &&
+            <div className="share-to-unlock absolute bottom-2 left-2 text-sm">
+              <button onClick={() => showModal(<Share />)}>Share to unlock more features</button>
+            </div>
+          }
 
-        {!isAppUnlocked &&
-          <div className="share-to-unlock absolute bottom-2 left-2 text-sm">
-            <button onClick={() => showModal(<Share />)}>Share to unlock more features</button>
+          <div className="powered-by absolute bottom-2 right-2 text-sm">
+            <a href="https://www.liveatc.net/" onClick={(e) => openExternalLink("https://www.liveatc.net/", e)} className="flex space-x-2">
+              <span>Powered by:</span>
+              <img src="https://img.liveatc.net/LiveATC-400.gif" alt="" className="rounded-md h-5" />
+            </a>
           </div>
-        }
-
-        <div className="powered-by absolute bottom-2 right-2 text-sm">
-          <a href="https://www.liveatc.net/" onClick={(e) => openExternalLink("https://www.liveatc.net/", e)} className="flex space-x-2">
-            <span>Powered by:</span>
-            <img src="https://img.liveatc.net/LiveATC-400.gif" alt="" className="rounded-md h-5" />
-          </a>
         </div>
+
 
         <AdWrapper />
       </div>
