@@ -33,6 +33,11 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPause, onPlay, onNex
   const dispatch = useDispatch();
   const appTheme = useSelector(getSelectedTheme) || defaultTheme;
 
+  // Sync local play state with isPlaying prop
+  useEffect(() => {
+    setPlay(isPlaying);
+  }, [isPlaying]);
+
   useEffect(() => {
     onVolumeChange(volume);
   }, [volume])
