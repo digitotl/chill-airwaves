@@ -18,6 +18,8 @@ import { openExternalLink } from "../../../helpers/openExternalLink";
 import { getIsUnlocked } from "../../../app/store/appState/appSlice";
 import { defaultTheme, setSelectedTheme } from "../../../app/store/userPreferences/userPreferencesSlice";
 import BannerAd from "../common/BannerAd";
+import StreakCounter from "../common/StreakCounter";
+import { useStreakCounter } from "../../hooks/useStreakCounter";
 
 const AdWrapper = () => {
   const [adKey, setAdKey] = useState<number>(0);
@@ -46,6 +48,9 @@ export const Player = () => {
   const { showModal } = useModal();
   const [atcSourceLoading, setAtcSourceLoading] = useState(false);
   const isAppUnlocked = useSelector(getIsUnlocked);
+
+  // Initialize streak counter
+  useStreakCounter();
 
   const navigate = useNavigate();
 
@@ -89,6 +94,11 @@ export const Player = () => {
       <div className="h-screen w-full text-white flex flex-col">
         <div className="relative flex flex-1">
           <BackgroundImageOverlay backgroundImageUrl={"https://cdn.midjourney.com/aeb9cae2-47e3-4edf-97b1-5170e511429f/0_0.png"} />
+
+          {/* Streak Counter */}
+          <div className="absolute top-4 left-4 z-10">
+            <StreakCounter />
+          </div>
 
           <button className="absolute top-4 right-4 z-10" onClick={() => openSettingsModal()}>
             <Gear size={28} />

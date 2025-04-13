@@ -19,6 +19,9 @@ export interface UserPreferencesState {
   likedAirportsIata: string[],
   musicVolume: number,
   atcVolume: number,
+  streakCount: number,
+  lastVisitDate: string | null,
+  sessionStartTime: number | null,
 }
 
 
@@ -41,6 +44,9 @@ export const userPreferencesSlice = createSlice({
     likedAirportsIata: [],
     musicVolume: 50,
     atcVolume: 25,
+    streakCount: 0,
+    lastVisitDate: null,
+    sessionStartTime: null,
   } as UserPreferencesState,
   reducers: {
     setSelectedTheme(state, action) {
@@ -57,6 +63,27 @@ export const userPreferencesSlice = createSlice({
     },
     addLikedAirport(state, action) {
       state.likedAirportsIata.push(action.payload);
+    },
+    setStreakCount(state, action: PayloadAction<number>) {
+      // Ensure the value is a valid number
+      const count = action.payload;
+      state.streakCount = isNaN(count) ? 0 : count;
+    },
+    setLastVisitDate(state, action: PayloadAction<string | null>) {
+      state.lastVisitDate = action.payload;
+    },
+    setSessionStartTime(state, action: PayloadAction<number | null>) {
+      state.sessionStartTime = action.payload;
+    },
+    resetStreak(state) {
+      state.streakCount = 0;
+      state.lastVisitDate = null;
+      state.sessionStartTime = null; // Reset session start time as well
+    },
+    incrementStreak(state) {
+      // Ensure we're incrementing a valid number
+      const currentStreak = state.streakCount || 0;
+      state.streakCount = currentStreak + 1;
     }
   },
   selectors: {
@@ -64,12 +91,20 @@ export const userPreferencesSlice = createSlice({
     getLikedAirports: (state: UserPreferencesState) => state.likedAirportsIata,
     getMusicVolume: (state: UserPreferencesState) => state.musicVolume,
     getAtcVolume: (state: UserPreferencesState) => state.atcVolume,
+    getStreakCount: (state: UserPreferencesState) => {
+      // Ensure we return a valid number
+      return state.streakCount === undefined || state.streakCount === null || isNaN(state.streakCount)
+        ? 0
+        : state.streakCount;
+    },
+    getLastVisitDate: (state: UserPreferencesState) => state.lastVisitDate,
+    getSessionStartTime: (state: UserPreferencesState) => state.sessionStartTime,
   }
 })
 
 
-export const { getSelectedTheme, getAtcVolume, getLikedAirports, getMusicVolume } = userPreferencesSlice.selectors;
-export const { setSelectedTheme, setLikedAirports, setMusicVolume, setAtcVolume, addLikedAirport } = userPreferencesSlice.actions;
+export const { getSelectedTheme, getAtcVolume, getLikedAirports, getMusicVolume, getStreakCount, getLastVisitDate, getSessionStartTime } = userPreferencesSlice.selectors;
+export const { setSelectedTheme, setLikedAirports, setMusicVolume, setAtcVolume, addLikedAirport, setStreakCount, setLastVisitDate, setSessionStartTime, resetStreak, incrementStreak } = userPreferencesSlice.actions;
 
 export const startAppListening = listenerMiddleware.startListening
 
