@@ -23,6 +23,22 @@ const getAssetPath = () => {
   }
 };
 
+const getIconPath = () => {
+  if (app.isPackaged) {
+    // In production, use the path relative to the resources
+    return path.join(process.resourcesPath, 'icons', 'icons');
+  } else {
+    // In development, use the path relative to the project root
+    return path.join(__dirname, '..', '..', 'icons', 'icons');
+  }
+};
+
+// For macOS dock icon in development
+if (process.platform === 'darwin' && !app.isPackaged) {
+  // This needs to be set before app is ready
+  app.dock?.setIcon(path.join(__dirname, '..', '..', 'icons', 'icons', 'png', '512x512.png'));
+}
+
 const isMac = os.platform() === "darwin";
 const isWindows = os.platform() === "win32";
 const isLinux = os.platform() === "linux";
@@ -50,6 +66,7 @@ const createWindow = () => {
     height: 620,
     minWidth: 728,
     minHeight: 620,
+    icon: path.join(getIconPath(), os.platform() === 'darwin' ? 'mac/icon.icns' : os.platform() === 'win32' ? 'win/icon.ico' : 'png/512x512.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },

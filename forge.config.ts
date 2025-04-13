@@ -13,7 +13,10 @@ const config: ForgeConfig = {
     protocols: [{
       "name": "Chill Airwaves",
       "schemes": ["chill-airwaves"]
-    }]
+    }],
+    icon: './icons/icons/icon', // Will automatically use icon.icns on macOS, icon.ico on Windows
+    appBundleId: 'com.chill-airwaves',
+    appCategoryType: 'public.app-category.music'
   },
   rebuildConfig: {},
   makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({}), {
