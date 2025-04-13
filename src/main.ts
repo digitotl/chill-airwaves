@@ -35,8 +35,18 @@ const getIconPath = () => {
 
 // For macOS dock icon in development
 if (process.platform === 'darwin' && !app.isPackaged) {
-  // This needs to be set before app is ready
-  app.dock?.setIcon(path.join(__dirname, '..', '..', 'icons', 'icons', 'png', '512x512.png'));
+  try {
+    const iconPath = path.join(__dirname, '..', '..', 'icons', 'icons', 'png', '512x512.png');
+    console.log('Setting dock icon path:', iconPath);
+
+    if (fs.existsSync(iconPath)) {
+      app.dock?.setIcon(iconPath);
+    } else {
+      console.error(`Icon not found at path: ${iconPath}`);
+    }
+  } catch (error) {
+    console.error('Failed to set dock icon:', error);
+  }
 }
 
 const isMac = os.platform() === "darwin";

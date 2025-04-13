@@ -10,7 +10,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-    "generate-icons": "electron-icon-builder --input=./logo.png --output=./icons"
+    "generate-icons": "electron-icon-builder --input=./ca-logo.png --output=./icons"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
