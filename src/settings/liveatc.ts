@@ -19,54 +19,53 @@ export interface Station {
 
 export const airports: Airport[] = [
   {
-    name: 'Hong Kong Intl Airport',
+    name: 'San Francisco Intl Airport',
     location: {
-      city: 'Hong Kong',
-      country: 'Hong Kong',
-      UTC: 8
+      city: 'San Francisco',
+      country: 'USA',
+      UTC: -8
     },
-    iata: 'hkg',
-    icao: 'vhhh',
+    iata: 'sfo',
+    icao: 'ksfo',
     restricted: false,
     stations: [
       {
-        name: 'App-Dep-Dir-Zone',
-        path: 'VHHH5-App-Dep-Dir-Zone'
+        name: 'KSFO-Gnd2',
+        path: 'KSFO-Gnd2'
       }
     ]
   },
   {
-    name: 'Tokyo Intl Airport (Haneda Airport)',
-    iata: 'hnd',
-    icao: 'rjtt',
+    name: 'Newark Liberty Intl Airport',
+    iata: 'ewr',
+    icao: 'kewr',
     restricted: false,
     location: {
-      city: 'Tokyo',
-      country: 'Japan',
-      UTC: 9
+      city: 'Newark',
+      country: 'USA',
+      UTC: -4
     },
     stations: [
       {
-        name: 'App-Dep',
-        path: 'RJTT-App-Dep'
+        name: 'KEWR-Gnd',
+        path: 'KEWR-Gnd'
       }
     ]
   },
   {
-    name: 'Rocky Mountain Metropolitan Airport',
-    iata: 'bjc',
-    icao: 'kbjc',
+    name: 'Londrina Airport',
+    iata: 'LDB',
+    icao: 'sblo',
     restricted: false,
     location: {
-      city: 'Denver',
-      state: 'CO',
-      country: 'United States',
-      UTC: -6
+      city: 'Londrina',
+      country: 'Brazil',
+      UTC: -3
     },
     stations: [
       {
-        name: 'Gnd-Twr',
-        path: 'KBJC3-Gnd-Twr'
+        name: 'SBLO-Twr-App-Center',
+        path: 'SBLO-Twr-App-Center'
       }
     ]
   }
