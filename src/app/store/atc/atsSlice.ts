@@ -1,9 +1,12 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit";
 import { listenerMiddleware } from "../middlewares/listener";
-import { buildLiveATCUrl } from "../../../services/atcService";
 import { RootState } from "..";
 import { airports } from "../../../settings/liveatc";
-
+import { ATC_RECORDS_COUNT } from "../../constants/appConstants";
+import { AtcApiService } from "../../services/atcApiService";
+import { addError } from "../appState/appSlice";
+import { Logger } from "../../utils/logger";
+import { EnvironmentService } from "../../services/environmentService";
 
 export const startAppListening = listenerMiddleware.startListening
 
@@ -66,22 +69,42 @@ export const { getSelectedAirport } = atcSlice.selectors;
 startAppListening({
   actionCreator: setSelectedAirportIata,
   effect: async (_, { dispatch, getState }) => {
-    const state = getState() as RootState;
-    const ATC_PROTOCOL = await window.electronAPI.getEnv('ATC_PROTOCOL')
+    try {
+      const state = getState() as RootState;
+      const selectedAirportIata = state.atc.selectedAirportIata;
 
-    const numberOfAtcRecords = 48;
-    const atcFilesUrls = [];
-    const selectedAirportIata = state.atc.selectedAirportIata;
-    const selectedAirport = airports.find(airport => airport.iata === selectedAirportIata);
+      if (!selectedAirportIata) {
+        throw new Error('No airport selected');
+      }
 
-    for (let i = numberOfAtcRecords; i > 0; i--) {
-      const atcUrl = buildLiveATCUrl(ATC_PROTOCOL + '://', selectedAirport, i);
-      atcFilesUrls.push(atcUrl);
+      const selectedAirport = airports.find(airport => airport.iata === selectedAirportIata);
+
+      if (!selectedAirport) {
+        throw new Error(`Airport with IATA code ${selectedAirportIata} not found`);
+      }
+
+      // Get the protocol from environment variables using our new service
+      const atcProtocol = await EnvironmentService.getEnv('ATC_PROTOCOL', 'https');
+
+      // Build the ATC playlist using our service
+      const atcUrls = AtcApiService.buildAtcPlaylist(
+        atcProtocol + '://',
+        selectedAirport
+      );
+
+      Logger.info(`Generated ATC playlist for ${selectedAirport.name} (${selectedAirportIata})`, 'atc');
+      Logger.debug('ATC playlist URLs:', 'atc', atcUrls);
+
+      dispatch(setAtcPlaylist({ tracks: atcUrls }));
+    } catch (error) {
+      Logger.exception(error, 'ATC playlist generation', 'atc');
+
+      dispatch(addError({
+        code: 'ATC_PLAYLIST_GENERATION_ERROR',
+        message: 'Failed to generate ATC playlist',
+        details: error instanceof Error ? error.message : String(error)
+      }));
     }
-
-    console.log(atcFilesUrls);
-
-    dispatch(setAtcPlaylist({ tracks: atcFilesUrls }));
   }
 });
 

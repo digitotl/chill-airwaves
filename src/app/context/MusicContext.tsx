@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-
+import { YOUTUBE_API_URL, YOUTUBE_SCRIPT_LOAD_TIMEOUT } from "../constants/appConstants";
+import { YouTubeErrorHandler } from "../utils/youtubeErrorHandler";
 
 export interface VideoInfo {
   title: string;
@@ -50,14 +51,14 @@ const fetchVideoInfo = async (url: any) => {
 const loadYoutubeIrfameAPI = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
+    tag.src = YOUTUBE_API_URL;
 
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
 
     const timeout = setTimeout(() => {
       reject(new Error('Script load timeout'));
-    }, 5000);
+    }, YOUTUBE_SCRIPT_LOAD_TIMEOUT);
 
     tag.onload = () => {
       clearTimeout(timeout);
@@ -179,22 +180,14 @@ export const MusicProvider: React.FC<MusicProviderProps> = ({ children }) => {
   }
 
   const onError = (event: any) => {
-    console.error(event);
-    switch (event.data) {
-      case 2:
-        console.log('Invalid parameter');
-        break;
-      case 100:
-        console.log('Video not found');
-        break;
-      case 101:
-      case 150:
-        nextTrack();
-        console.log('Video not embeddable');
-        break;
-      default:
-        console.log('Unknown error');
-        break;
+    const errorCode = event.data;
+    const errorMessage = YouTubeErrorHandler.getErrorMessage(errorCode);
+    console.error(`YouTube Error (${errorCode}): ${errorMessage}`);
+
+    // For recoverable errors, automatically skip to the next track
+    if (YouTubeErrorHandler.isRecoverableError(errorCode)) {
+      console.log('Attempting recovery by playing next track');
+      nextTrack();
     }
   }
 
