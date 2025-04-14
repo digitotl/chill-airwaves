@@ -20,14 +20,11 @@ const StreakCounter: React.FC = () => {
 
   return (
     <div
-      className="flex items-center gap-1 text-white rounded-full px-3 py-1 shadow-md cursor-default"
-      style={{
-        background: `linear-gradient(to right, ${appTheme.colors.primary}, ${appTheme.colors.secondary})`
-      }}
+      className="flex items-center gap-1 text-white "
       title={`${streakCount} day streak! Keep it going by using the app for at least 15 minutes each day.`}
     >
-      <Fire className="text-yellow-300" size={20} weight="fill" />
-      <span className="font-bold">{streakCount}</span>
+      <Fire className="text-yellow-300" size={18} weight="fill" />
+      <span className="">{streakCount}</span>
     </div>
   );
 };
