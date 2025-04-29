@@ -8,15 +8,15 @@ config({ path: '.env' });
 
 
 export const atcProtocolHandler = async (request: GlobalRequest): Promise<Response> => {
-  const ATC_BASE_URL = process.env.ATC_BASE_URL;
-  if (!ATC_BASE_URL) {
-    console.error("ATC_BASE_URL environment variable is not set.");
-    return new Response('Internal Server Error: ATC_BASE_URL not configured', { status: 500 });
+  const CDN_URL = process.env.CLOUDFLARE_CDN_URL; // Use Cloudflare CDN URL
+  if (!CDN_URL) {
+    console.error("CLOUDFLARE_CDN_URL environment variable is not set.");
+    return new Response('Internal Server Error: CLOUDFLARE_CDN_URL not configured', { status: 500 });
   }
 
   // Extract the path part from the atc:// URL
   const remoteFilePath = request.url.substring(ATC_PROTOCOL.length + 3);
-  const remoteFileUrl = `${ATC_BASE_URL}${remoteFilePath}`;
+  const remoteFileUrl = `${CDN_URL}/${remoteFilePath}`; // Construct URL with CDN base
 
   console.log(`Proxying ATC request for: ${request.url} to ${remoteFileUrl}`);
 

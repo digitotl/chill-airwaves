@@ -134,7 +134,7 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
     - Electron's main process intercepts the request for the `atc://` URL because it was registered with `protocol.handle`.
     - The `atcProtocolHandler` function executes:
       - Extracts the remote file path (e.g., `ksfo/KSFO-Gnd2-...mp3`) from the `atc://` URL.
-      - Constructs the actual remote URL using `ATC_BASE_URL` from environment variables (e.g., `https://cdn.example.com/ksfo/KSFO-Gnd2-...mp3`).
+      - Constructs the actual remote URL using `CLOUDFLARE_CDN_URL` from environment variables (e.g., `https://pub-test.r2.dev/ksfo/KSFO-Gnd2-...mp3`).
       - **Proxying:** Directly fetches the audio file from the `remoteFileUrl` using Electron's `net.fetch`. No local caching or silence removal is performed.
       - **Response:** Returns the `Response` object obtained from `net.fetch`. Electron handles streaming the audio data to the renderer process.
 5.  **Audio Playback & Visualization (`src/app/components/radio/Radar.tsx`, `AtcAnimation.tsx`):**
@@ -209,13 +209,13 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 - **`AtcApiService.ts` (`src/app/services/`):** Builds ATC playlist URLs.
 - **`themeService.ts` (`src/app/services/`):** Applies visual themes by manipulating CSS variables (`applyTheme`).
 - **`environmentService.ts` (`src/app/services/`):** Provides access to environment variables via the `electronAPI` exposed in `preload.ts`.
-- **`atcProtocol.ts` (`src/protocols/`):** Implements the custom `atc://` protocol handler. It now directly proxies requests for ATC audio to the configured `ATC_BASE_URL`.
+- **`atcProtocol.ts` (`src/protocols/`):** Implements the custom `atc://` protocol handler. It now directly proxies requests for ATC audio to the configured `CLOUDFLARE_CDN_URL`.
 
 ## 9. Configuration and Settings
 
 - **`liveatc.ts` (`src/settings/`):** Contains a static list of `Airport` objects, including their names, IATA/ICAO codes, locations, UTC offsets, and available ATC station paths.
 - **`audioMotionAnalyzer.ts` (`src/settings/`):** Defines default configuration options (`AUDIO_MOTION_ANALYZER_SETTINGS`) for the `AudioMotionAnalyzer` instance used in `AtcAnimation.tsx`.
-- **`.env`:** Stores environment-specific variables like `ATC_BASE_URL` and `GOOGLE_CLIENT_ID`. Accessed securely via `ipcMain` and `preload.ts`.
+- **`.env`:** Stores environment-specific variables like `CLOUDFLARE_CDN_URL` and `GOOGLE_CLIENT_ID`. Accessed securely via `ipcMain` and `preload.ts`.
 - **`tailwind.config.js`, `postcss.config.js`:** Configuration for Tailwind CSS and PostCSS. Themes are applied dynamically by setting CSS variables defined here (`--color-primary`, etc.).
 - **`forge.config.ts`:** Configuration for Electron Forge, defining packaging options, makers (for different OS installers), and the Vite plugin setup for building main, preload, and renderer code.
 
