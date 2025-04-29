@@ -1,10 +1,5 @@
-import fs from "fs-extra"
 import { config } from "dotenv";
-import { removeSilence } from "../helpers/silenceRemover";
-import { removeFromCache } from "../helpers/removeCacheFile";
-import { app, net } from "electron";
-import path from "path";
-import { CacheService } from "../services/cacheService";
+import { net } from "electron";
 
 
 const ATC_PROTOCOL = 'atc'
@@ -12,63 +7,39 @@ const ATC_PROTOCOL = 'atc'
 config({ path: '.env' });
 
 
-export async function fileResponse(filePath: string): Promise<Response> {
-  try {
-    // Ensure the file exists and read it into a buffer
-    const fileBuffer = await fs.promises.readFile(filePath);
-    const fileStats = await fs.promises.stat(filePath);
-
-    // Set headers like 'Content-Type' and 'Content-Length'
-    const headers = {
-      'Content-Type': 'audio/mpeg', // Or 'audio/wav' for WAV files
-      'Content-Length': fileStats.size.toString(),
-    };
-
-    // Return the file buffer in the response
-    return new Response(fileBuffer, {
-      status: 200,
-      headers: headers
-    });
-  } catch (error) {
-    // Return a 404 if the file does not exist or any other error occurs
-    return new Response('File not found', { status: 404 });
-  }
-}
-
-function cleanUpCache(cacheDirPath: string, fileName: string) {
-  console.log(`Cleaning up cache for ${fileName}`);
-  removeFromCache(path.join(cacheDirPath, fileName))
-}
-
-export const atcProtocolHandler = async (request: GlobalRequest) => {
+export const atcProtocolHandler = async (request: GlobalRequest): Promise<Response> => {
   const ATC_BASE_URL = process.env.ATC_BASE_URL;
-  const remoteFilePath = request.url.substr(ATC_PROTOCOL.length + 3)
-  const remoteFileUrl = `${ATC_BASE_URL}${remoteFilePath}`
-
-  const fileName = remoteFilePath.split('/').pop();
-  const cacheFolderPath = path.join(app.getPath('downloads'), 'chill-airwaves-cache');
-
-  const cacheService = new CacheService(cacheFolderPath, fs, app, path, net);
-
-  const fileExtension = path.extname(fileName);
-  const baseName = path.basename(fileName, fileExtension);
-  const reducedSilenceFileName = `${baseName}-reduced-silence${fileExtension}`;
-  const reducedSilenceFilePath = path.join(cacheFolderPath, reducedSilenceFileName);
-
-  // Check if the file is already cached
-  if (cacheService.isAvailable(reducedSilenceFilePath)) {
-    return fileResponse(reducedSilenceFilePath);
+  if (!ATC_BASE_URL) {
+    console.error("ATC_BASE_URL environment variable is not set.");
+    return new Response('Internal Server Error: ATC_BASE_URL not configured', { status: 500 });
   }
+
+  // Extract the path part from the atc:// URL
+  const remoteFilePath = request.url.substring(ATC_PROTOCOL.length + 3);
+  const remoteFileUrl = `${ATC_BASE_URL}${remoteFilePath}`;
+
+  console.log(`Proxying ATC request for: ${request.url} to ${remoteFileUrl}`);
 
   try {
-    const { cacheFilePath } = await cacheService.download(remoteFileUrl);
-    await removeSilence(cacheFilePath, reducedSilenceFilePath)
-    removeFromCache(cacheFilePath);
+    // Use net.fetch to directly fetch the resource from the remote URL
+    const response = await net.fetch(remoteFileUrl);
+
+    // Check if the fetch was successful
+    if (!response.ok) {
+      console.error(`Failed to fetch ${remoteFileUrl}: ${response.status} ${response.statusText}`);
+      // Return a new response indicating the error
+      return new Response(`Failed to fetch resource: ${response.statusText}`, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: { 'Content-Type': 'text/plain' }
+      });
+    }
+
+    // Return the fetched response directly. Electron will handle the stream.
+    return response;
+
   } catch (error) {
-    return new Response('Error saving file to cache', { status: 500 });
+    console.error(`Error fetching ${remoteFileUrl}:`, error);
+    return new Response(`Internal Server Error: ${error.message || 'Unknown error'}`, { status: 500 });
   }
-
-
-
-  return fileResponse(reducedSilenceFilePath);
 }

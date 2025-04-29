@@ -134,14 +134,9 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
     - Electron's main process intercepts the request for the `atc://` URL because it was registered with `protocol.handle`.
     - The `atcProtocolHandler` function executes:
       - Extracts the remote file path (e.g., `ksfo/KSFO-Gnd2-...mp3`) from the `atc://` URL.
-      - Constructs the actual remote URL using `ATC_BASE_URL` from environment variables (e.g., `https://liveatc.net/archive/...`).
-      - **Caching:** Checks if the file exists in a local cache directory (`app.getPath('downloads')/chill-airwaves-cache`).
-        - If cached: Reads the file from the cache (`fs.readFile`).
-        - If not cached:
-          - Downloads the MP3 file from the `remoteFileUrl` using Electron's `net.request`.
-          - Saves the downloaded file to the cache directory (`fs.writeFile`).
-      - **Silence Removal:** Processes the cached/downloaded MP3 file using `removeSilence` (`src/helpers/silenceRemover.ts`). This likely involves calling an external `ffmpeg` process to strip silent parts, making the ATC communication more concise. The processed file might be saved temporarily.
-      - **Response:** Creates a `Response` object containing the processed audio data (likely read from the silence-removed file) with the correct `Content-Type: audio/mpeg` header.
+      - Constructs the actual remote URL using `ATC_BASE_URL` from environment variables (e.g., `https://cdn.example.com/ksfo/KSFO-Gnd2-...mp3`).
+      - **Proxying:** Directly fetches the audio file from the `remoteFileUrl` using Electron's `net.fetch`. No local caching or silence removal is performed.
+      - **Response:** Returns the `Response` object obtained from `net.fetch`. Electron handles streaming the audio data to the renderer process.
 5.  **Audio Playback & Visualization (`src/app/components/radio/Radar.tsx`, `AtcAnimation.tsx`):**
     - The renderer process receives the audio data stream from the main process via the custom protocol handler.
     - The `<audio>` element in `Radar.tsx` plays the ATC audio.
@@ -213,12 +208,8 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 
 - **`AtcApiService.ts` (`src/app/services/`):** Builds ATC playlist URLs.
 - **`themeService.ts` (`src/app/services/`):** Applies visual themes by manipulating CSS variables (`applyTheme`).
-- **`cacheService.ts` (`src/services/`):** (Used by `atcProtocolHandler`) Manages caching of downloaded ATC files in the user's downloads directory.
 - **`environmentService.ts` (`src/app/services/`):** Provides access to environment variables via the `electronAPI` exposed in `preload.ts`.
-- **`silenceRemover.ts` (`src/helpers/`):** (Used by `atcProtocolHandler`) Contains logic to invoke `ffmpeg` to remove silence from audio files.
-- **`atcProtocol.ts` (`src/protocols/`):** Implements the custom `atc://` protocol handler for fetching, caching, and processing ATC audio.
-- **`logger.ts` (`src/app/utils/`):** Simple utility for logging messages with levels and context.
-- **Color Helpers (`src/helpers/`):** `lightenColor.ts`, `transparentColor.ts`.
+- **`atcProtocol.ts` (`src/protocols/`):** Implements the custom `atc://` protocol handler. It now directly proxies requests for ATC audio to the configured `ATC_BASE_URL`.
 
 ## 9. Configuration and Settings
 
@@ -300,8 +291,8 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 - **Performance Optimization:**
 
   - Implement dynamic loading for audio visualization components to reduce initial render time
-  - Implement client-side caching strategy for frequently visited airports
-  - Further optimize silence detection/removal algorithm to reduce CPU usage
+  - Implement client-side caching strategy for frequently visited airports (Note: Server-side caching via CDN is assumed, but client-side could still be beneficial)
+  - Further optimize silence detection/removal algorithm (Note: Currently removed from `atcProtocolHandler`, may need re-evaluation if required)
   - Implement a background worker for audio processing tasks
 
 - **Feature Enhancements:**

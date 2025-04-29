@@ -1,0 +1,3 @@
+- Always check the existing architecture and try to stay consistent with it.
+- Always try to use tools that are already available, and introduce new ones if needed.
+- Whenever you make a code change always update the ./APP-ARCHIRTECTURE.MD file to reflect the changes.
