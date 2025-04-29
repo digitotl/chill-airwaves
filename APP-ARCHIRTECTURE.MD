@@ -34,7 +34,7 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
     - Sets custom dock icon for macOS in development mode.
     - Sets up application protocol `chill-airwaves://` using `app.setAsDefaultProtocolClient`.
     - Handles Squirrel startup events (Windows installer) and requests single instance lock.
-    - Registers a custom protocol handler `atc://` using `protocol.handle('atc', atcProtocolHandler)`.
+    - **Checks if `process.env.ATC_PROTOCOL` is defined before registering** a custom protocol handler `atc://` using `protocol.handle(process.env.ATC_PROTOCOL, atcProtocolHandler)`. Logs an error if the environment variable is missing.
     - Registers an `icon://` protocol for accessing SVG icons.
     - Sets up IPC handlers for communication with renderer process:
       - `getEnv`: Returns environment variables to the renderer.
@@ -209,7 +209,7 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 - **`AtcApiService.ts` (`src/app/services/`):** Builds ATC playlist URLs.
 - **`themeService.ts` (`src/app/services/`):** Applies visual themes by manipulating CSS variables (`applyTheme`).
 - **`environmentService.ts` (`src/app/services/`):** Provides access to environment variables via the `electronAPI` exposed in `preload.ts`.
-- **`atcProtocol.ts` (`src/protocols/`):** Implements the custom `atc://` protocol handler. It now directly proxies requests for ATC audio to the configured `CLOUDFLARE_CDN_URL`.
+- **`atcProtocol.ts` (`src/protocols/`):** Implements the custom `atc://` protocol handler, registered in `main.ts` **only if the `ATC_PROTOCOL` environment variable is set**. It now directly proxies requests for ATC audio to the configured `CLOUDFLARE_CDN_URL`.
 
 ## 9. Configuration and Settings
 

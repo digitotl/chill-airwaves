@@ -165,7 +165,13 @@ const createWindow = () => {
   });
 
 
-  protocol.handle(process.env.ATC_PROTOCOL, atcProtocolHandler)
+  // Ensure ATC_PROTOCOL is defined before registering the handler
+  if (process.env.ATC_PROTOCOL) {
+    protocol.handle(process.env.ATC_PROTOCOL, atcProtocolHandler);
+  } else {
+    console.error('ATC_PROTOCOL environment variable is not set. Skipping ATC protocol handler registration.');
+  }
+
   protocol.handle('icon', async (request) => {
     const url = new URL(request.url);
     const iconName = url.hostname;
