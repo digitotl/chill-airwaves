@@ -167,7 +167,7 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 ## 7. UI Components Breakdown
 
 - **`Main.tsx`:** Top-level component, sets up providers and routing.
-- **`screens/Player.tsx`:** Main application view that replaced the older `TestLayout.tsx`.
+- **`screens/Player.tsx`:** Main application view intended to replace the older `TestLayout.tsx` (migration noted in TODOs).
   - Integrates `StationSelector`, `Radar`, and `MusicPlayer`.
   - Connects to Redux to get state (`selectedAirport`, `currentAtcTrack`) and dispatch actions.
   - Connects to `MusicContext` for music control.
