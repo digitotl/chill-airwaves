@@ -8,61 +8,82 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 
 ## 2. Core Technologies
 
-- **Framework:** Electron (`electron`, `@electron-forge/cli`)
+- **Framework:** Electron (`electron`, `@electron-forge/cli`) v32.0.1
 - **UI Library:** React (`react`, `react-dom`)
 - **State Management:** Redux Toolkit (`@reduxjs/toolkit`, `react-redux`) with persistence (`redux-persist`)
 - **Language:** TypeScript (`typescript`)
 - **Styling:** Tailwind CSS (`tailwindcss`), PostCSS (`postcss`), SCSS (`sass`)
 - **Animation:** Framer Motion (`framer-motion`)
 - **Audio Visualization:** AudioMotion Analyzer (`audiomotion-analyzer`)
-- **Build Tool:** Vite (`vite`, `@electron-forge/plugin-vite`)
+- **Build Tool:** Vite v5.0.12 (`vite`, `@electron-forge/plugin-vite`)
 - **Packaging:** Electron Forge (`@electron-forge/cli`)
 - **Routing:** React Router (`react-router-dom`)
-- **Testing:** (Add if present, e.g., Jest, React Testing Library)
+- **Audio Processing:** FFmpeg (`fluent-ffmpeg`, `@ffmpeg-installer/ffmpeg`)
+- **Authentication:** Google OAuth (`@react-oauth/google`)
+- **Notifications:** React Hot Toast (`react-hot-toast`)
+- **Icons:** Phosphor Icons (`@phosphor-icons/react`)
+- **Testing:** Directory structure suggests Jest-based testing
 
 ## 3. Application Startup Flow
 
 1.  **Electron Main Process Initialization (`src/main.ts`):**
     - The application starts by running the main Electron process script (`src/main.ts`).
-    - It configures basic app settings, handles Squirrel startup events (Windows installer), and requests single instance lock.
+    - It configures basic app settings and loads environment variables from `.env` using `dotenv`.
+    - Sets up FFmpeg path using `ffmpeg.setFfmpegPath(ffmpegInstaller.path)`.
+    - Defines utility functions like `getAssetPath()` and `getIconPath()` to handle different paths in development vs production.
+    - Sets custom dock icon for macOS in development mode.
     - Sets up application protocol `chill-airwaves://` using `app.setAsDefaultProtocolClient`.
-    - Defines IPC handlers (`ipcMain.handle`) to respond to requests from the renderer process (e.g., `getEnv`, `open-external`, `verify-share`).
-    - Registers a custom protocol handler `atc://` using `protocol.handle('atc', atcProtocolHandler)` which points to `src/protocols/atcProtocol.ts`.
-    - Loads environment variables from `.env` using `dotenv`.
-    - Installs React DevTools extension in development mode.
-    - Listens for the `ready` event (`app.on('ready', createWindow)`).
+    - Handles Squirrel startup events (Windows installer) and requests single instance lock.
+    - Registers a custom protocol handler `atc://` using `protocol.handle('atc', atcProtocolHandler)`.
+    - Registers an `icon://` protocol for accessing SVG icons.
+    - Sets up IPC handlers for communication with renderer process:
+      - `getEnv`: Returns environment variables to the renderer.
+      - `get-downloads-path`: Provides the system downloads directory path.
+      - `open-external`: Opens URLs in the default browser.
+      - `verify-share`: Validates sharing links.
+    - Installs React and Redux DevTools in development mode.
+    - Listens for the `ready`, `window-all-closed`, `activate`, and `open-url` events.
 2.  **Window Creation (`createWindow` in `src/main.ts`):**
-    - Creates the main `BrowserWindow` instance with specific dimensions and web preferences.
-    - Specifies the `preload` script: `preload: path.join(__dirname, 'preload.js')`.
+    - Creates the main `BrowserWindow` instance with specific dimensions and web preferences:
+      - Width: 1280px, Height: 620px (with minimum sizes set)
+      - Icon path based on the platform (macOS, Windows, Linux)
+      - Preload script specified as `preload: path.join(__dirname, 'preload.js')`
     - Loads the frontend application:
-      - In development: Loads the URL provided by the Vite dev server (`MAIN_WINDOW_VITE_DEV_SERVER_URL`).
+      - In development: Loads from Vite dev server URL (`MAIN_WINDOW_VITE_DEV_SERVER_URL`).
       - In production: Loads the built `index.html` file (`mainWindow.loadFile(...)`).
-    - Sets up handlers to open external links in the default system browser (`mainWindow.webContents.setWindowOpenHandler`, `mainWindow.webContents.on('will-navigate')`).
-    - Opens DevTools (`mainWindow.webContents.openDevTools()`).
+    - Sets up handlers to intercept navigation:
+      - `setWindowOpenHandler`: Opens external URLs in the default browser.
+      - `will-navigate` event listener: Checks if URLs are internal or external.
+    - Opens DevTools for development purposes.
 3.  **Preload Script Execution (`src/preload.ts`):**
-    - Runs in a privileged context before the renderer's web content begins loading but after the DOM is available.
-    - Uses `contextBridge.exposeInMainWorld('electronAPI', ...)` to securely expose specific Electron/Node.js functionalities to the renderer process. This includes:
+    - Runs in a privileged context before the renderer process loads.
+    - Uses `contextBridge.exposeInMainWorld('electronAPI', ...)` to securely expose specific Electron/Node.js functionalities to the renderer process:
       - `getEnv`: To fetch environment variables from the main process.
-      - `getAtc`: (Potentially unused or legacy) Intended to get ATC data.
-      - `shell.openExternal`: To open URLs externally.
-      - `verifyShare`: To verify share links.
+      - `getAtc`: To access ATC data.
+      - `shell.openExternal`: To open URLs in the default system browser.
+      - `verifyShare`: To verify and validate share links.
 4.  **Renderer Process Initialization (`src/renderer.ts`):**
     - Entry point for the Vite-bundled frontend code.
     - Imports the main SCSS file (`./index.scss`) for global styles.
-    - Imports and executes `./app/App.tsx`.
+    - Imports `./app/App` to start React application.
+    - Contains no functionality beyond initializing the application.
 5.  **React Application Mount (`src/app/App.tsx`):**
     - Uses `createRoot` from `react-dom/client` to render the main React component (`<Main />`) into the `#root` div defined in `index.html`.
 6.  **Main Component Setup (`src/app/components/Main.tsx`):**
+    - Initializes state for downloads path, Google client ID, and loading state.
+    - Makes API calls to the electron main process to retrieve environment variables.
+    - Sets a timeout to control the initial loading/splashscreen duration.
     - Wraps the application in necessary providers:
-      - `Provider store={store}`: Connects the app to the Redux store (`src/app/store/index.ts`).
-      - `PersistGate`: Delays rendering until the persisted Redux state is retrieved.
-      - `MusicProvider`: Provides music playback context (`src/app/context/MusicContext.tsx`).
-      - `GoogleOAuthProvider`: (If `googleClientId` is fetched) For Google authentication.
-      - `ModalProvider`: Manages modal dialogs (`src/app/context/ModalContext.tsx`).
-      - `BrowserRouter`: Enables routing using React Router.
-    - Fetches the `GOOGLE_CLIENT_ID` from the main process using `window.electronAPI.getEnv`.
-    - Sets up application routes (`<Routes>`) - currently `/` maps to `<Player />` (likely `TestLayout.tsx` or similar) and `/auth` to `<Login />`.
-    - Includes `<Toaster />` for displaying notifications (`react-hot-toast`).
+      - `Provider store={store}`: Connects to Redux store.
+      - `PersistGate`: Delays rendering until persisted state is retrieved.
+      - `MusicProvider`: Provides context for music playback.
+      - `GoogleOAuthProvider`: Configures Google authentication when client ID is available.
+      - `ModalProvider`: Manages modal dialogs.
+      - `BrowserRouter`: Enables React Router.
+    - Defines routes for the application:
+      - Root path (`/`): Renders the `Player` component.
+      - Auth path (`/auth`): Renders the `Login` component.
+    - Configures `Toaster` for notifications with custom styling.
 
 ## 4. State Management (Redux)
 
@@ -146,29 +167,47 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 ## 7. UI Components Breakdown
 
 - **`Main.tsx`:** Top-level component, sets up providers and routing.
-- **`TestLayout.tsx` (or similar Player component):** Main view container.
+- **`screens/Player.tsx`:** Main application view that replaced the older `TestLayout.tsx`.
   - Integrates `StationSelector`, `Radar`, and `MusicPlayer`.
-  - Connects to Redux to get state (`selectedAirport`, `currentAtcTrack`) and dispatch actions (`nextAtcTrack`, `setSelectedAirportIata`).
+  - Connects to Redux to get state (`selectedAirport`, `currentAtcTrack`) and dispatch actions.
   - Connects to `MusicContext` for music control.
+  - Includes streak counter integration via `useStreakCounter` hook.
+  - Integrates advertisement banners through `BannerAd` component.
+- **`screens/Splashscreen.tsx`:** Animated application startup screen.
+  - Uses Framer Motion for SVG path animations to display the app logo.
+  - Handles fade-out transitions.
+- **`screens/Login.tsx`:** Authentication screen for user login.
 - **`StationSelector.tsx`:** Handles displaying the airport selection dropdown/modal.
   - Uses `SelectAirport.tsx` to render the list.
   - Manages modal visibility state.
-- **`Radar.tsx`:** Displays ATC information and controls ATC playback.
+- **`radio/Radar.tsx`:** Displays ATC information and controls ATC playback.
   - Contains the core ATC `<audio>` element.
   - Integrates `ATCGridSquare` and `AtcAnimation` for visuals.
   - Shows airport details (IATA, city, country, local time via `LiveUTCClock`).
   - Includes the ATC volume control (`HiddenVolumeSlider`).
-- **`MusicPlayer.tsx`:** Controls and displays music playback.
+- **`musicPlayer/MusicPlayer.tsx`:** Controls and displays music playback.
   - Shows track info, controls, volume slider.
   - Integrates `DancingBars` visualization.
+  - Includes `VinylRecord` animated component for visual flair.
+  - Implements `ScrollingContainer` for text overflow animation.
+  - Provides social media links to music sources (YouTube, Spotify).
 - **Visual Components:**
   - `ATCGridBackground.tsx` / `ATCGridSquare.tsx`: Renders the static and animated radar grid visuals.
   - `AtcAnimation.tsx`: Renders the AudioMotionAnalyzer visualization for ATC.
-  - `DancingBars.tsx`: Renders simple bar animations, likely for music.
+  - `DancingBars.tsx`: Renders simple bar animations for music visualization.
   - `FadingImage.tsx`: Displays images with a fade-in effect.
   - `BackgroundImageOverlay.tsx`: Displays a background image.
-- **Common Components (`src/app/components/common/`):** Reusable UI elements like sliders (`CustomRangeInput`, `HiddenVolumeSlider`), buttons, error boundaries (`ErrorBoundary.tsx`), etc.
-- **Modals (`src/app/components/modals/`):** Components for modal dialogs (e.g., `Settings.tsx`). Managed via `ModalContext.tsx` and `useModal.tsx` hook.
+  - `SoundWaves.tsx`: Audio visualization component.
+- **Common Components (`src/app/components/common/`):** Reusable UI elements like:
+  - `CustomRangeInput.tsx` / `HiddenVolumeSlider.tsx`: Volume control components.
+  - `AnimatedTextLine.tsx`: Text with animation capabilities.
+  - `ErrorBoundary.tsx`: React error boundary for fault tolerance.
+  - `FacebookShare.tsx`: Social sharing functionality.
+  - `BannerAd.tsx`: Advertisement integration component.
+  - `StreakCounter.tsx`: Component to display user usage streak.
+- **Modals (`src/app/components/modals/`):** Components for modal dialogs:
+  - `Settings.tsx`: Application settings modal.
+  - `Share.tsx`: Sharing options modal.
 
 ## 8. Key Services and Helpers
 
@@ -214,9 +253,31 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 
 ## 12. Error Handling
 
-- Centralized in Redux app state slice (`errors` array, `addError`, `clearErrors` reducers).
-- Error boundaries in React components (e.g., `ErrorBoundary.tsx`).
-- Logging via `logger.ts` utility.
+- **Redux-Based Error Management**:
+
+  - Centralized in Redux app state slice with an `errors` array and actions like `addError` and `clearErrors`.
+  - Allows consistent error tracking and display across the application.
+
+- **React Error Boundaries**:
+  - Implementation in `ErrorBoundary.tsx` to catch and handle React component rendering errors.
+  - Prevents entire application crashes when a component fails.
+- **Logging System**:
+
+  - Structured logger via `logger.ts` utility with support for different log levels (`DEBUG`, `INFO`, `WARN`, `ERROR`).
+  - Provides context-based logging for better debugging capabilities.
+
+- **YouTube-Specific Error Handling**:
+
+  - `youtubeErrorHandler.ts` for handling YouTube API and player-specific errors.
+  - Maps error codes to meaningful messages and recovery actions.
+
+- **Network Error Management**:
+
+  - Graceful fallbacks when ATC audio streams fail to load.
+  - Automatic playlist advancement on errors via `onTrackError` handlers.
+
+- **Input Validation**:
+  - Client-side validation for user inputs and share links via `verifyShare` helper.
 
 ## 13. Testing and Quality Assurance
 
@@ -238,34 +299,41 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 
 - **Performance Optimization:**
 
-  - Implement lazy loading for non-essential components to improve initial load time
-  - Further optimize audio processing to reduce CPU usage during silence removal
-  - Consider WebAssembly for audio processing tasks to improve performance
+  - Implement dynamic loading for audio visualization components to reduce initial render time
+  - Implement client-side caching strategy for frequently visited airports
+  - Further optimize silence detection/removal algorithm to reduce CPU usage
+  - Implement a background worker for audio processing tasks
 
 - **Feature Enhancements:**
 
   - Add support for additional ATC data sources beyond LiveATC
-  - Implement user accounts with cloud synchronization of preferences
-  - Add playlist creation/saving for favorite ATC stations
-  - Introduce more visualization options for audio streams
+  - Complete implementation of user accounts with OAuth integration
+  - Add playlist creation and sharing for favorite ATC stations
+  - Implement night mode theme transitions based on user's local time
+  - Add keyboard shortcuts for common actions
+  - Implement customizable audio equalization settings
 
 - **Technical Debt:**
 
-  - Rename `TestLayout.tsx` to a more appropriate name (e.g., `PlayerLayout.tsx`)
-  - Increase test coverage, particularly for critical components and services
-  - Complete migration of any remaining class components to functional components with hooks
+  - Complete the migration from `TestLayout.tsx` to `Player.tsx` (update all references)
+  - Increase unit test coverage, particularly for audio processing components
+  - Consolidate duplicate volume control components
+  - Refactor the MusicContext to use Redux or the React Context API more effectively
 
 - **Platform Improvements:**
 
-  - Enhance mobile-friendly design for potential future web version
-  - Add automatic updates mechanism for desktop application
-  - Optimize ffmpeg integration with better error handling and progress reporting
+  - Add auto-update functionality via Electron's update mechanisms
+  - Improve cross-platform ffmpeg integration with better error handling
+  - Add macOS-specific Touch Bar controls
+  - Improve startup performance on slower systems
+  - Implement support for system media controls
 
 - **Code Quality:**
-  - Implement stricter TypeScript configurations
-  - Set up continuous integration pipeline with automated tests
-  - Document public API methods and interfaces
-  - Establish consistent error handling strategy across main and renderer processes
+  - Add comprehensive TypeScript interfaces for all data structures
+  - Implement a stricter ESLint configuration
+  - Set up GitHub Actions for CI/CD
+  - Create comprehensive API documentation for context and service functions
+  - Establish consistent error handling with standardized error types
 
 ---
 
