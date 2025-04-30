@@ -36,7 +36,7 @@ export const TestLayout = () => {
   }, [selectedAirportIata])
 
   useEffect(() => {
-    dispatch(setSelectedAirportIata('sfo'))
+    dispatch(setSelectedAirportIata(airports[0].iata));
   }, []);
 
   const createToast = () => toast(

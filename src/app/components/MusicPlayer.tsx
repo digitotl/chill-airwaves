@@ -8,6 +8,7 @@ import { AnimatedTextLine } from "./common/AnimatedTextLine";
 import FadingImage from "./common/FadingImage";
 import DancingBars from "./DancingBars";
 import { VolumeSlider } from "./common/VolumeSlider";
+import { airports } from "../../settings/liveatc";
 
 export const MusicPlayer = () => {
   const musicContext = useContext(MusicContext);
@@ -24,7 +25,7 @@ export const MusicPlayer = () => {
 
 
   useEffect(() => {
-    dispatch(setSelectedAirportIata('hkg'))
+    dispatch(setSelectedAirportIata(airports[0].iata));
   }, []);
 
 

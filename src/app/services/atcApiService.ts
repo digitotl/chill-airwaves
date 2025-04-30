@@ -48,6 +48,6 @@ export class AtcApiService {
     const basePath = primaryStation.path;
     const formattedIndex = recordIndex.toString().padStart(2, '0');
 
-    return `${protocol}${basePath}/${formattedIndex}.mp3`;
+    return `${protocol}${airport.icao}_${basePath}/${formattedIndex}.mp3`;
   }
 }
