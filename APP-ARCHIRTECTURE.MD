@@ -207,6 +207,10 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 ## 8. Key Services and Helpers
 
 - **`AtcApiService.ts` (`src/app/services/`):** Builds ATC playlist URLs.
+  - **`buildAtcPlaylist`:** Generates an array of ATC audio URLs based on the airport and protocol.
+  - **`buildAtcUrl`:** Creates a single URL with the correct format.
+  - **`getMostRecentTimeframe`:** Takes the current time and an offset parameter, returns a Date object representing the most recent 30-minute timeframe in the past. Used to determine the correct file name format (YYYY-MM-DD_HHMM) for ATC recordings.
+  - **`formatTimeframeForFileName`:** Formats a Date object into the ATC file naming convention (YYYY-MM-DD_HHMM).
 - **`themeService.ts` (`src/app/services/`):** Applies visual themes by manipulating CSS variables (`applyTheme`).
 - **`environmentService.ts` (`src/app/services/`):** Provides access to environment variables via the `electronAPI` exposed in `preload.ts`.
 - **`atcProtocol.ts` (`src/protocols/`):** Implements the custom `atc://` protocol handler, registered in `main.ts` **only if the `ATC_PROTOCOL` environment variable is set**. It now directly proxies requests for ATC audio to the configured `CLOUDFLARE_CDN_URL`.
