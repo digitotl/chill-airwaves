@@ -68,5 +68,59 @@ export const airports: Airport[] = [
         path: 'SBLO-Twr-App-Center'
       }
     ]
+  },
+  {
+    icao: 'rjtt',
+    iata: 'hnd',
+    name: 'Tokyo Haneda Airport',
+    location: {
+      city: 'Tokyo',
+      country: 'Japan',
+      state: 'Tokyo',
+      UTC: 9
+    },
+    restricted: false,
+    stations: [
+      {
+        name: 'RJTT-Gnd',
+        path: 'RJTT-Gnd'
+      }
+    ]
+  },
+  {
+    icao: 'eidw',
+    iata: 'DUB',
+    name: 'Dublin Airport',
+    location: {
+      city: 'Dublin',
+      country: 'Ireland',
+      state: 'Leinster',
+      UTC: 0
+    },
+    restricted: false,
+    stations: [
+      {
+        name: 'EIDW8-Gnd-Twr-App-Ctr',
+        path: 'EIDW8-Gnd-Twr-App-Ctr'
+      }
+    ]
+  },
+  {
+    icao: 'sbpa',
+    iata: 'POA',
+    name: 'Salgado Filho International Airport',
+    location: {
+      city: 'Porto Alegre',
+      country: 'Brazil',
+      state: 'Rio Grande do Sul',
+      UTC: -3
+    },
+    restricted: false,
+    stations: [
+      {
+        name: 'SBPA2',
+        path: 'SBPA2'
+      }
+    ]
   }
 ]
