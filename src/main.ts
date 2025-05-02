@@ -5,13 +5,10 @@ import { config } from "dotenv";
 import installExtension, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { atcProtocolHandler } from './protocols/atcProtocol';
 import fs from 'fs';
-import ffmpeg from 'fluent-ffmpeg';
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import { verifyShare } from './helpers/verifyShare';
 import { fetchAvailableAtcFilesFromR2 } from './services/atcService';
 
 config({ path: '.env' });
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const getAssetPath = () => {
   if (app.isPackaged) {

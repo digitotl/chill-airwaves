@@ -85,12 +85,12 @@ Chill Airwaves is built with the following technologies:
 - **Tailwind CSS**: Utility-first CSS framework for styling
 - **Framer Motion**: Animation library for smooth UI transitions
 - **Audio Motion Analyzer**: Audio visualization
-- **FFmpeg**: Audio processing for ATC streams (silence removal)
+- **Cloud CDN**: Streams pre-processed ATC audio files directly
 
 The application features a dual-stream audio system:
 
 1. **Music Stream**: YouTube-based lo-fi/ambient music
-2. **ATC Stream**: Live air traffic control communications
+2. **ATC Stream**: Air traffic control communications streamed from Cloud CDN
 
 ## Project Structure
 
