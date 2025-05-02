@@ -3,7 +3,6 @@ import path from 'path';
 import os from 'os';
 import { config } from "dotenv";
 import installExtension, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
-import { atcProtocolHandler } from './protocols/atcProtocol';
 import fs from 'fs';
 import { verifyShare } from './helpers/verifyShare';
 import { fetchAvailableAtcFilesFromR2 } from './services/atcService';
@@ -164,14 +163,6 @@ const createWindow = () => {
     console.log(process.env[key]);
     return process.env[key];
   });
-
-
-  // Ensure ATC_PROTOCOL is defined before registering the handler
-  if (process.env.ATC_PROTOCOL) {
-    protocol.handle(process.env.ATC_PROTOCOL, atcProtocolHandler);
-  } else {
-    console.error('ATC_PROTOCOL environment variable is not set. Skipping ATC protocol handler registration.');
-  }
 
   protocol.handle('icon', async (request) => {
     const url = new URL(request.url);

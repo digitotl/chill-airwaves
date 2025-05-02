@@ -36,7 +36,6 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
     - Sets custom dock icon for macOS in development mode.
     - Sets up application protocol `chill-airwaves://` using `app.setAsDefaultProtocolClient`.
     - Handles Squirrel startup events (Windows installer) and requests single instance lock.
-    - **Checks if `process.env.ATC_PROTOCOL` is defined before registering** a custom protocol handler `atc://` using `protocol.handle(process.env.ATC_PROTOCOL, atcProtocolHandler)`. Logs an error if the environment variable is missing.
     - Registers an `icon://` protocol for accessing SVG icons.
     - Sets up IPC handlers for communication with renderer process:
       - `getEnv`: Returns environment variables to the renderer.
@@ -119,7 +118,7 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
   - **Selectors:** Provide memoized functions to access parts of the ATC state (e.g., `getSelectedAirport`, `getCurrentAtcTrack`).
   - **Async Logic/Effects:** Uses `createListenerMiddleware` (`startAppListening`) to react to `setSelectedAirportIata`. When an airport is selected, it:
     - Finds the `Airport` object from `src/settings/liveatc.ts`.
-    - Calls `AtcApiService.buildAtcPlaylist` (`src/app/services/atcApiService.ts`) to generate a list of ATC audio URLs (using the `atc://` protocol).
+    - Calls `AtcApiService.buildAtcPlaylist` (`src/app/services/atcApiService.ts`) to generate a list of ATC audio URLs (using direct CDN URLs).
     - Dispatches `setAtcPlaylist` to update the store with the new playlist.
 
 - **User Preferences Slice (`src/app/store/userPreferences/userPreferencesSlice.ts`):**
@@ -150,39 +149,35 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
       - Makes a request to the R2 storage bucket using the S3-compatible list-objects API (`?list-type=2`)
       - Parses the XML response to extract available audio file names
       - Sorts them by name (reverse chronological order)
-      - Creates URLs with the appropriate protocol
+      - Creates direct URLs to the Cloudflare CDN
     - If the request fails or returns no files, it falls back to the original `AtcApiService.buildAtcPlaylist`, which:
-      - Generates an array of URLs like `atc://ksfo/KSFO-Gnd2-MM-DD-YYYY-HHMMZ.mp3` based on the airport's ICAO, station path, and recent timestamps
+      - Generates an array of direct CDN URLs based on the airport's ICAO, station path, and recent timestamps
       - The number of records is defined by `ATC_RECORDS_COUNT`
-    - The generated playlist (array of `atc://` URLs) is dispatched via `setAtcPlaylist`.
+    - The generated playlist (array of direct CDN URLs) is dispatched via `setAtcPlaylist`.
 
-3.  **ATC file listing (playlist generation) now uses an IPC-based flow:**
+3.  **ATC file listing (playlist generation) uses an IPC-based flow:**
 
     - The renderer calls `window.electronAPI.fetchAvailableAtcFiles` (exposed in `preload.ts`).
     - This triggers the `atc:fetchAvailableFiles` IPC handler in the main process (`src/main.ts`).
     - The handler calls `fetchAvailableAtcFilesFromR2` in `src/services/atcService.ts`, which fetches the file list from the R2 bucket using Node.js (no CORS).
-    - The result is returned to the renderer, which builds the playlist URLs as before.
-    - **Direct fetch from the renderer/browser is no longer used for R2 file listing.**
+    - The result is returned to the renderer, which builds the playlist URLs with the CDN base URL.
+    - **Direct fetch from the renderer/browser is not used for R2 file listing due to CORS restrictions.**
 
 4.  **Audio Playback Request (`src/app/components/radio/Radar.tsx`):**
 
-    - The `Radar` component gets the `currentAtcTrack` (a `atc://` URL) from the Redux store via the `getCurrentAtcTrack` selector.
+    - The `Radar` component gets the `currentAtcTrack` (a direct CDN URL) from the Redux store via the `getCurrentAtcTrack` selector.
     - It maintains a reference to the previous source URL to avoid unnecessary reloading.
     - It tracks source changes via a useEffect and only updates the audio element's src attribute when it actually changes.
     - The component uses proper event handlers to manage the audio element lifecycle.
 
-5.  **Custom Protocol Handling (`src/protocols/atcProtocol.ts`):**
+5.  **Direct Audio Streaming:**
 
-    - Electron's main process intercepts the request for the `atc://` URL because it was registered with `protocol.handle`.
-    - The `atcProtocolHandler` function executes:
-      - Extracts the remote file path (e.g., `ksfo/KSFO-Gnd2-...mp3`) from the `atc://` URL.
-      - Constructs the actual remote URL using `CLOUDFLARE_CDN_URL` from environment variables (e.g., `https://pub-test.r2.dev/ksfo/KSFO-Gnd2-...mp3`).
-      - **Proxying:** Directly fetches the audio file from the `remoteFileUrl` using Electron's `net.fetch`. No local caching is performed.
-      - **Response:** Returns the `Response` object obtained from `net.fetch`. Electron handles streaming the audio data to the renderer process.
+    - The browser's `<audio>` element directly streams audio from the Cloudflare CDN URLs.
+    - No custom protocol handling or proxying is needed.
+    - The audio is loaded and played using standard web APIs without any intermediary proxying.
 
 6.  **Audio Playback & Visualization (`src/app/components/radio/Radar.tsx`, `AtcAnimation.tsx`):**
-    - The renderer process receives the audio data stream from the main process via the custom protocol handler.
-    - The `<audio>` element in `Radar.tsx` plays the ATC audio.
+    - The `<audio>` element in `Radar.tsx` plays the ATC audio directly from the CDN.
     - The `Radar` component handles audio events:
       - `onTrackEnd`, `onTrackError`: Dispatch `nextTrack` action to Redux to advance the playlist.
       - `onCanPlay`, `onLoadStart`: Update loading/playing states.
@@ -271,18 +266,16 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 
 - **`AtcApiService.ts` (`src/app/services/`):** Builds ATC playlist URLs.
 
-  - **`buildAtcPlaylist`:** Generates an array of ATC audio URLs based on the airport and protocol.
-  - **`buildAtcUrl`:** Creates a single URL with the correct format.
+  - **`buildAtcPlaylist`:** Generates an array of direct CDN audio URLs based on the airport.
+  - **`buildAtcUrl`:** Creates a single URL with the correct format pointing to the CDN.
   - **`getMostRecentTimeframe`:** Takes the current time and an offset parameter, returns a Date object representing the most recent 30-minute timeframe in the past. Used to determine the correct file name format (YYYY-MM-DD_HHMM) for ATC recordings.
   - **`formatTimeframeForFileName`:** Formats a Date object into the ATC file naming convention (YYYY-MM-DD_HHMM).
-  - **`fetchAvailableFiles`:** Queries the R2 storage bucket for existing audio files for a given airport.
+  - **`fetchAvailableFiles`:** Queries the R2 storage bucket for existing audio files for a given airport and returns direct CDN URLs.
   - **`buildAtcPlaylistFromAvailable`:** Attempts to build a playlist from actually available files in storage, with fallback to generated filenames.
 
 - **`themeService.ts` (`src/app/services/`):** Applies visual themes by manipulating CSS variables (`applyTheme`).
 
 - **`environmentService.ts` (`src/app/services/`):** Provides access to environment variables via the `electronAPI` exposed in `preload.ts`.
-
-- **`atcProtocol.ts` (`src/protocols/`):** Implements the custom `atc://` protocol handler, registered in `main.ts` **only if the `ATC_PROTOCOL` environment variable is set**. It directly proxies requests for ATC audio to the configured `CLOUDFLARE_CDN_URL`.
 
 ## 9. Configuration and Settings
 

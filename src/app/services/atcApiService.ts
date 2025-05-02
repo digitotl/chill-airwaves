@@ -8,13 +8,13 @@ import { EnvironmentService } from './environmentService';
 export class AtcApiService {
   /**
    * Builds a playlist of ATC audio URLs for a given airport
-   * @param protocol The protocol to use (http/https)
+   * @param cdnUrl The base CDN URL
    * @param airport The airport to get audio for
    * @param recordsCount Number of records to include in the playlist
    * @returns Array of ATC audio URLs
    */
   static buildAtcPlaylist(
-    protocol: string,
+    cdnUrl: string,
     airport: Airport,
     recordsCount = ATC_RECORDS_COUNT
   ): string[] {
@@ -26,7 +26,7 @@ export class AtcApiService {
 
     // Generate URLs for each record
     for (let i = recordsCount; i > 0; i--) {
-      const url = this.buildAtcUrl(protocol, airport, recordsCount - i + 1);
+      const url = this.buildAtcUrl(cdnUrl, airport, recordsCount - i + 1);
       atcUrls.push(url);
     }
 
@@ -36,19 +36,18 @@ export class AtcApiService {
   /**
    * Fetches available ATC audio files from the storage bucket for a specific airport
    * @param airport The airport to get audio files for
+   * @param cdnUrl The base CDN URL
    * @param maxFiles Maximum number of files to retrieve (defaults to ATC_RECORDS_COUNT)
    * @returns Promise that resolves to array of available file URLs
    */
   static async fetchAvailableFiles(
     airport: Airport,
-    protocol: string,
+    cdnUrl: string,
     maxFiles = ATC_RECORDS_COUNT
   ): Promise<string[]> {
     try {
-      // Get the CDN URL from environment
-      const cdnUrl = await EnvironmentService.getEnv('CLOUDFLARE_CDN_URL');
       if (!cdnUrl) {
-        throw new Error('CLOUDFLARE_CDN_URL environment variable is not set');
+        throw new Error('CDN URL is required to fetch available ATC files');
       }
 
       // Construct the airport's directory path
@@ -57,9 +56,9 @@ export class AtcApiService {
       // Use Electron API to fetch available files via main process (no CORS)
       const fileNames = await (window as any).electronAPI.fetchAvailableAtcFiles(cdnUrl, directoryPath, maxFiles);
 
-      // Convert to protocol URLs
+      // Convert to direct CDN URLs
       return fileNames.map((fileName: string) =>
-        `${protocol}${directoryPath}/${fileName}`
+        `${cdnUrl}/${directoryPath}/${fileName}`
       );
     } catch (error) {
       console.error('Error fetching available ATC files:', error);
@@ -109,12 +108,12 @@ export class AtcApiService {
 
   /**
    * Builds a single ATC audio URL
-   * @param protocol The protocol to use (http/https)
+   * @param cdnUrl The base CDN URL
    * @param airport The airport to get audio for
    * @param offset Number of 30-minute timeframes to go back
    * @returns URL to the ATC audio file
    */
-  static buildAtcUrl(protocol: string, airport: Airport, offset = 1): string {
+  static buildAtcUrl(cdnUrl: string, airport: Airport, offset = 1): string {
     if (!Number.isInteger(offset) || offset < 1) {
       throw new Error("Offset must be a positive integer");
     }
@@ -125,18 +124,18 @@ export class AtcApiService {
     // Format the date for the filename
     const formattedDate = this.formatTimeframeForFileName(timeframe);
 
-    return `${protocol}${airport.icao}_${airport.stations[0].path}/${formattedDate}.opus`;
+    return `${cdnUrl}/${airport.icao}_${airport.stations[0].path}/${formattedDate}.opus`;
   }
 
   /**
    * Builds a playlist of ATC audio URLs for a given airport by checking available files
-   * @param protocol The protocol to use (http/https)
+   * @param cdnUrl The base CDN URL
    * @param airport The airport to get audio for
    * @param recordsCount Maximum number of records to include in the playlist
    * @returns Promise that resolves to an array of available ATC audio URLs
    */
   static async buildAtcPlaylistFromAvailable(
-    protocol: string,
+    cdnUrl: string,
     airport: Airport,
     recordsCount = ATC_RECORDS_COUNT
   ): Promise<string[]> {
@@ -146,31 +145,21 @@ export class AtcApiService {
 
     try {
       // Fetch available files
-      const availableFiles = await this.fetchAvailableFiles(airport, protocol, recordsCount);
+      const availableFiles = await this.fetchAvailableFiles(airport, cdnUrl, recordsCount);
 
       if (availableFiles.length > 0) {
         console.log(`Found ${availableFiles.length} available ATC files for ${airport.icao}`);
         console.log('Available files:', availableFiles);
-        console.log('---------------------------------');
-        console.log('---------------------------------');
-        console.log('---------------------------------');
-        console.log('---------------------------------');
-        console.log('---------------------------------');
-        console.log('---------------------------------');
-        console.log('---------------------------------');
-        console.log('---------------------------------');
-        console.log('---------------------------------');
-        console.log('---------------------------------');
         return availableFiles;
       } else {
         console.warn(`No available ATC files found for ${airport.icao}, falling back to generated URLs`);
         // Fallback to generated file paths
-        return this.buildAtcPlaylist(protocol, airport, recordsCount);
+        return this.buildAtcPlaylist(cdnUrl, airport, recordsCount);
       }
     } catch (error) {
       console.error('Error building ATC playlist from available files:', error);
       // Fallback to generated file paths
-      return this.buildAtcPlaylist(protocol, airport, recordsCount);
+      return this.buildAtcPlaylist(cdnUrl, airport, recordsCount);
     }
   }
 }

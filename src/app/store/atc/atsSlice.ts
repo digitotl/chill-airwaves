@@ -83,15 +83,19 @@ startAppListening({
         throw new Error(`Airport with IATA code ${selectedAirportIata} not found`);
       }
 
-      // Get the protocol from environment variables using our new service
-      const atcProtocol = await EnvironmentService.getEnv('ATC_PROTOCOL', 'atc');
+      // Get the CDN URL from environment variables
+      const cdnUrl = await EnvironmentService.getEnv('CLOUDFLARE_CDN_URL');
+
+      if (!cdnUrl) {
+        throw new Error('CLOUDFLARE_CDN_URL environment variable is not set');
+      }
 
       Logger.info(`Fetching ATC playlist for ${selectedAirport.name} (${selectedAirportIata})`, 'atc');
 
       try {
         // Try to build the ATC playlist from available files in R2 storage
         const atcUrls = await AtcApiService.buildAtcPlaylistFromAvailable(
-          `${atcProtocol}://`,
+          cdnUrl,
           selectedAirport
         );
 
@@ -104,7 +108,7 @@ startAppListening({
         Logger.warn(`Failed to fetch available files, falling back to generated playlist: ${playlistError.message}`, 'atc');
 
         const fallbackUrls = AtcApiService.buildAtcPlaylist(
-          `${atcProtocol}://`,
+          cdnUrl,
           selectedAirport
         );
 
