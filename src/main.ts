@@ -8,7 +8,7 @@ import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import { verifyShare } from './helpers/verifyShare';
-
+import { fetchAvailableAtcFilesFromR2 } from './services/atcService';
 
 config({ path: '.env' });
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
@@ -137,6 +137,10 @@ const createWindow = () => {
   });
 
   ipcMain.handle('verify-share', verifyShare);
+
+  ipcMain.handle('atc:fetchAvailableFiles', async (_event, { cdnUrl, directoryPath, maxFiles }) => {
+    return fetchAvailableAtcFilesFromR2(cdnUrl, directoryPath, maxFiles);
+  });
 
   const gotTheLock = app.requestSingleInstanceLock()
 

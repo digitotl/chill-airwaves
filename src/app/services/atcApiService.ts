@@ -53,37 +53,12 @@ export class AtcApiService {
 
       // Construct the airport's directory path
       const directoryPath = `${airport.icao}_${airport.stations[0].path}`;
-      const listUrl = `${cdnUrl}/${directoryPath}/?list-type=2`; // Using S3-compatible list request
 
-      console.log(`Fetching directory listing from ${listUrl}`);
-
-      // Fetch the directory listing
-      const response = await fetch(listUrl);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch directory listing: ${response.status} ${response.statusText}`);
-      }
-
-      // Parse XML response to extract file names
-      const xmlText = await response.text();
-
-      // Simple regex-based XML parsing for file names
-      // This is a basic implementation; consider using a proper XML parser for production
-      const fileRegex = /<Key>(.*?\.opus)<\/Key>/g;
-      const matches = [...xmlText.matchAll(fileRegex)];
-
-      // Extract file names and sort by name (which should order them by date for our file naming convention)
-      const fileNames = matches
-        .map(match => match[1])
-        .filter(fileName => fileName.endsWith('.opus'))
-        .sort()
-        .reverse(); // Most recent first
-
-      // Limit the number of files
-      const limitedFiles = fileNames.slice(0, maxFiles);
+      // Use Electron API to fetch available files via main process (no CORS)
+      const fileNames = await (window as any).electronAPI.fetchAvailableAtcFiles(cdnUrl, directoryPath, maxFiles);
 
       // Convert to protocol URLs
-      return limitedFiles.map(fileName =>
+      return fileNames.map((fileName: string) =>
         `${protocol}${directoryPath}/${fileName}`
       );
     } catch (error) {
@@ -175,6 +150,17 @@ export class AtcApiService {
 
       if (availableFiles.length > 0) {
         console.log(`Found ${availableFiles.length} available ATC files for ${airport.icao}`);
+        console.log('Available files:', availableFiles);
+        console.log('---------------------------------');
+        console.log('---------------------------------');
+        console.log('---------------------------------');
+        console.log('---------------------------------');
+        console.log('---------------------------------');
+        console.log('---------------------------------');
+        console.log('---------------------------------');
+        console.log('---------------------------------');
+        console.log('---------------------------------');
+        console.log('---------------------------------');
         return availableFiles;
       } else {
         console.warn(`No available ATC files found for ${airport.icao}, falling back to generated URLs`);

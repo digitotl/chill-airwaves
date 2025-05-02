@@ -12,7 +12,10 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
 - **UI Library:** React (`react`, `react-dom`)
 - **State Management:** Redux Toolkit (`@reduxjs/toolkit`, `react-redux`) with persistence (`redux-persist`)
 - **Language:** TypeScript (`typescript`)
-- **Styling:** Tailwind CSS (`tailwindcss`), PostCSS (`postcss`), SCSS (`sass`)
+- **Styling:**
+  - Tailwind CSS layers are imported via `@tailwind` directives in `src/index.css` (not via `@import` in SCSS).
+  - Custom SCSS styles are kept in `src/index.scss` and imported alongside `index.css` in the renderer entry (`src/renderer.ts`).
+  - This approach avoids Sass deprecation warnings and follows Tailwind and Sass best practices.
 - **Animation:** Framer Motion (`framer-motion`)
 - **Audio Visualization:** AudioMotion Analyzer (`audiomotion-analyzer`)
 - **Build Tool:** Vite v5.0.12 (`vite`, `@electron-forge/plugin-vite`)
@@ -41,6 +44,7 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
       - `get-downloads-path`: Provides the system downloads directory path.
       - `open-external`: Opens URLs in the default browser.
       - `verify-share`: Validates sharing links.
+      - `atc:fetchAvailableFiles`: Fetches available ATC files from the R2 bucket.
     - Installs React and Redux DevTools in development mode.
     - Listens for the `ready`, `window-all-closed`, `activate`, and `open-url` events.
 2.  **Window Creation (`createWindow` in `src/main.ts`):**
@@ -62,6 +66,7 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
       - `getAtc`: To access ATC data.
       - `shell.openExternal`: To open URLs in the default system browser.
       - `verifyShare`: To verify and validate share links.
+      - `fetchAvailableAtcFiles`: To fetch available ATC files from the main process.
 4.  **Renderer Process Initialization (`src/renderer.ts`):**
     - Entry point for the Vite-bundled frontend code.
     - Imports the main SCSS file (`./index.scss`) for global styles.
@@ -133,19 +138,25 @@ Chill Airwaves is a cross-platform desktop application built with Electron. It p
       - Generates an array of URLs like `atc://ksfo/KSFO-Gnd2-MM-DD-YYYY-HHMMZ.mp3` based on the airport's ICAO, station path, and recent timestamps
       - The number of records is defined by `ATC_RECORDS_COUNT`
     - The generated playlist (array of `atc://` URLs) is dispatched via `setAtcPlaylist`.
-3.  **Audio Playback Request (`src/app/components/radio/Radar.tsx`):**
+3.  **ATC file listing (playlist generation) now uses an IPC-based flow:**
+    - The renderer calls `window.electronAPI.fetchAvailableAtcFiles` (exposed in `preload.ts`).
+    - This triggers the `atc:fetchAvailableFiles` IPC handler in the main process (`src/main.ts`).
+    - The handler calls `fetchAvailableAtcFilesFromR2` in `src/services/atcService.ts`, which fetches the file list from the R2 bucket using Node.js (no CORS).
+    - The result is returned to the renderer, which builds the playlist URLs as before.
+    - **Direct fetch from the renderer/browser is no longer used for R2 file listing.**
+4.  **Audio Playback Request (`src/app/components/radio/Radar.tsx`):**
     - The `Radar` component gets the `currentAtcTrack` (a `atc://` URL) from the Redux store via the `getCurrentAtcTrack` selector.
     - It maintains a reference to the previous source URL to avoid unnecessary reloading.
     - It tracks source changes via a useEffect and only updates the audio element's src attribute when it actually changes.
     - The component uses proper event handlers to manage the audio element lifecycle.
-4.  **Custom Protocol Handling (`src/protocols/atcProtocol.ts`):**
+5.  **Custom Protocol Handling (`src/protocols/atcProtocol.ts`):**
     - Electron's main process intercepts the request for the `atc://` URL because it was registered with `protocol.handle`.
     - The `atcProtocolHandler` function executes:
       - Extracts the remote file path (e.g., `ksfo/KSFO-Gnd2-...mp3`) from the `atc://` URL.
       - Constructs the actual remote URL using `CLOUDFLARE_CDN_URL` from environment variables (e.g., `https://pub-test.r2.dev/ksfo/KSFO-Gnd2-...mp3`).
       - **Proxying:** Directly fetches the audio file from the `remoteFileUrl` using Electron's `net.fetch`. No local caching or silence removal is performed.
       - **Response:** Returns the `Response` object obtained from `net.fetch`. Electron handles streaming the audio data to the renderer process.
-5.  **Audio Playback & Visualization (`src/app/components/radio/Radar.tsx`, `AtcAnimation.tsx`):**
+6.  **Audio Playback & Visualization (`src/app/components/radio/Radar.tsx`, `AtcAnimation.tsx`):**
     - The renderer process receives the audio data stream from the main process via the custom protocol handler.
     - The `<audio>` element in `Radar.tsx` plays the ATC audio.
     - The `Radar` component handles audio events:

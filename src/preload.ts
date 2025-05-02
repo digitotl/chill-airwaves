@@ -12,7 +12,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
       return ipcRenderer.invoke('open-external', url);
     }
   },
-  verifyShare: (url: string) => ipcRenderer.invoke('verify-share', url)
+  verifyShare: (url: string) => ipcRenderer.invoke('verify-share', url),
+  fetchAvailableAtcFiles: (cdnUrl: string, directoryPath: string, maxFiles: number) =>
+    ipcRenderer.invoke('atc:fetchAvailableFiles', { cdnUrl, directoryPath, maxFiles })
 });
 
 
