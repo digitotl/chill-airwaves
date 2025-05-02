@@ -84,18 +84,33 @@ startAppListening({
       }
 
       // Get the protocol from environment variables using our new service
-      const atcProtocol = await EnvironmentService.getEnv('ATC_PROTOCOL', 'https');
+      const atcProtocol = await EnvironmentService.getEnv('ATC_PROTOCOL', 'atc');
 
-      // Build the ATC playlist using our service
-      const atcUrls = AtcApiService.buildAtcPlaylist(
-        atcProtocol + '://',
-        selectedAirport
-      );
+      Logger.info(`Fetching ATC playlist for ${selectedAirport.name} (${selectedAirportIata})`, 'atc');
 
-      Logger.info(`Generated ATC playlist for ${selectedAirport.name} (${selectedAirportIata})`, 'atc');
-      Logger.debug('ATC playlist URLs:', 'atc', atcUrls);
+      try {
+        // Try to build the ATC playlist from available files in R2 storage
+        const atcUrls = await AtcApiService.buildAtcPlaylistFromAvailable(
+          `${atcProtocol}://`,
+          selectedAirport
+        );
 
-      dispatch(setAtcPlaylist({ tracks: atcUrls }));
+        Logger.info(`Generated ATC playlist for ${selectedAirport.name} (${selectedAirportIata}) with ${atcUrls.length} tracks`, 'atc');
+        Logger.debug('ATC playlist URLs:', 'atc', atcUrls);
+
+        dispatch(setAtcPlaylist({ tracks: atcUrls }));
+      } catch (playlistError) {
+        // If fetching available files fails, fall back to the original method
+        Logger.warn(`Failed to fetch available files, falling back to generated playlist: ${playlistError.message}`, 'atc');
+
+        const fallbackUrls = AtcApiService.buildAtcPlaylist(
+          `${atcProtocol}://`,
+          selectedAirport
+        );
+
+        Logger.info(`Generated fallback ATC playlist for ${selectedAirport.name} (${selectedAirportIata})`, 'atc');
+        dispatch(setAtcPlaylist({ tracks: fallbackUrls }));
+      }
     } catch (error) {
       Logger.exception(error, 'ATC playlist generation', 'atc');
 

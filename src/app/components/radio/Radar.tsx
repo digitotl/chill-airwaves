@@ -21,38 +21,53 @@ export const Radar: React.FC<RadarProps> = ({ airport, atcSource, onTrackEnd, on
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const volume = useSelector(getAtcVolume);
   const dispatch = useDispatch();
-  const appTheme = useSelector(getSelectedTheme) || defaultTheme
+  const appTheme = useSelector(getSelectedTheme) || defaultTheme;
+  const lastSourceRef = useRef<string>('');
 
   useEffect(() => {
     if (audioElementRef.current) {
       audioElementRef.current.volume = volume / 100;
     }
-  }, [volume])
+  }, [volume]);
+
+  // Track source changes to avoid unnecessary reloads
+  useEffect(() => {
+    if (atcSource && atcSource !== lastSourceRef.current) {
+      lastSourceRef.current = atcSource;
+
+      if (audioElementRef.current) {
+        // Only update src if it's actually changed
+        if (decodeURI(atcSource) !== audioElementRef.current.src) {
+          console.log(`Setting new audio source: ${atcSource}`);
+          audioElementRef.current.src = decodeURI(atcSource);
+          audioElementRef.current.load();
+        }
+      }
+    }
+  }, [atcSource]);
 
   const handleVolumeChange = (value: number) => {
     dispatch(setAtcVolume(value));
   }
 
-  useEffect(() => {
-    if (audioElementRef.current) {
-      audioElementRef.current.volume = volume / 100;
-    }
-  }, [volume])
+  // Handle errors gracefully
+  const handleError = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    console.error(`Audio element error for ${atcSource}:`, e);
+    if (onTrackError) onTrackError();
+  };
 
   return (
-
     <div id="radar-container" className="flex-grow relative" style={{ maxHeight: '300px' }}>
-      <audio controls ref={audioElementRef} autoPlay
-        src={decodeURI(atcSource)}
-        onLoadStart={onLoadStart}
-        //onLoad={onCanPlay}
-        onCanPlay={onCanPlay && onCanPlay}
-        onEnded={onTrackEnd && onTrackEnd}
-        onError={onTrackError && onTrackError}
-        onPause={onPaused && onPaused}
+      <audio
+        ref={audioElementRef}
+        autoPlay
+        onLoadStart={() => onLoadStart && onLoadStart()}
+        onCanPlay={() => onCanPlay && onCanPlay()}
+        onEnded={() => onTrackEnd && onTrackEnd()}
+        onError={handleError}
+        onPause={() => onPaused && onPaused()}
         hidden
-      >
-      </audio>
+      />
 
       <div id="radar" className="absolute inset-0 bg-black/50 backdrop-blur-sm rounded-3xl" style={{ color: appTheme.colors.primary }}>
         <ATCGridSquare color={appTheme.colors.primary} />
