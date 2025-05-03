@@ -9,6 +9,9 @@ import { fetchAvailableAtcFilesFromR2 } from './services/atcService';
 
 config({ path: '.env' });
 
+// Keep a global reference of the window object to prevent garbage collection
+let mainWindow: BrowserWindow | null = null;
+
 const getAssetPath = () => {
   if (app.isPackaged) {
     // In production, use the path relative to the executable
@@ -66,8 +69,15 @@ if (require('electron-squirrel-startup')) {
 }
 
 const createWindow = () => {
+  // Don't create a new window if one already exists
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+    return;
+  }
+
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1280,
     height: 620,
     minWidth: 728,
@@ -124,6 +134,11 @@ const createWindow = () => {
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
+  // Cleanup when window is closed
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+
   ipcMain.handle('get-downloads-path', () => {
     return path.join(app.getPath('downloads'));
   });
@@ -151,11 +166,6 @@ const createWindow = () => {
       }
       // the commandLine is array of strings in which last element is deep link url
       dialog.showErrorBox('Welcome Back', `You arrived from: ${commandLine.pop()}`)
-    })
-
-    // Create mainWindow, load the rest of the app, etc...
-    app.whenReady().then(() => {
-      createWindow()
     })
   }
 
