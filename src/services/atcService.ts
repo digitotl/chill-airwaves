@@ -13,9 +13,10 @@ export function formatAirportPath(airportIcao: string, station: Station) {
  * @param maxFiles Max number of files to return
  * @returns Promise<string[]> List of available file names (not full URLs)
  */
-export async function fetchAvailableAtcFilesFromR2(cdnUrl: string, directoryPath: string, maxFiles: number = 10): Promise<string[]> {
+export async function fetchAvailableAtcFilesFromR2(cdnUrl: string, directoryPath: string, maxFiles = 10): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const listUrl = `${cdnUrl}/${directoryPath}/?list-type=2`;
+    console.log(`Fetching ATC files from: ${listUrl}`);
     let data = '';
     https.get(listUrl, (res) => {
       if (res.statusCode !== 200) {

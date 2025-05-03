@@ -107,13 +107,13 @@ startAppListening({
         // If fetching available files fails, fall back to the original method
         Logger.warn(`Failed to fetch available files, falling back to generated playlist: ${playlistError.message}`, 'atc');
 
-        const fallbackUrls = AtcApiService.buildAtcPlaylist(
-          cdnUrl,
-          selectedAirport
-        );
+        //const fallbackUrls = AtcApiService.buildAtcPlaylist(
+        //  cdnUrl,
+        //  selectedAirport
+        //);
 
         Logger.info(`Generated fallback ATC playlist for ${selectedAirport.name} (${selectedAirportIata})`, 'atc');
-        dispatch(setAtcPlaylist({ tracks: fallbackUrls }));
+        //dispatch(setAtcPlaylist({ tracks: fallbackUrls }));
       }
     } catch (error) {
       Logger.exception(error, 'ATC playlist generation', 'atc');

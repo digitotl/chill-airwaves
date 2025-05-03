@@ -146,7 +146,7 @@ export class AtcApiService {
     try {
       // Fetch available files
       const availableFiles = await this.fetchAvailableFiles(airport, cdnUrl, recordsCount);
-
+      console.log('Available files:', availableFiles);
       if (availableFiles.length > 0) {
         console.log(`Found ${availableFiles.length} available ATC files for ${airport.icao}`);
         console.log('Available files:', availableFiles);
