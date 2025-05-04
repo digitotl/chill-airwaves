@@ -1,36 +1,79 @@
 import { Station } from "../settings/liveatc";
-import https from 'https';
+import dotenv from 'dotenv';
+import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+
+// Load environment variables
+dotenv.config();
 
 export function formatAirportPath(airportIcao: string, station: Station) {
   return `${airportIcao}/${station.path}`;
 }
 
 /**
- * Fetches available ATC audio files from the R2 bucket for a specific airport/station.
+ * Fetches available ATC audio files from the R2 bucket for a specific station.
  * This runs in the Electron main process (no CORS).
- * @param cdnUrl The base Cloudflare CDN URL
- * @param directoryPath The airport directory (e.g. KSFO_Gnd2)
- * @param maxFiles Max number of files to return
+ * @param stationPath The station path (e.g. KSFO_Gnd2)
  * @returns Promise<string[]> List of available file names (not full URLs)
  */
-export async function fetchAvailableAtcFilesFromR2(cdnUrl: string, directoryPath: string, maxFiles = 10): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    const listUrl = `${cdnUrl}/${directoryPath}/?list-type=2`;
-    console.log(`Fetching ATC files from: ${listUrl}`);
-    let data = '';
-    https.get(listUrl, (res) => {
-      if (res.statusCode !== 200) {
-        reject(new Error(`Failed to fetch directory listing: ${res.statusCode}`));
-        return;
-      }
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', () => {
-        // Simple regex-based XML parsing for file names
-        const fileRegex = /<Key>(.*?\.opus)<\/Key>/g;
-        const matches = [...data.matchAll(fileRegex)];
-        const fileNames = matches.map(match => match[1]).filter(f => f.endsWith('.opus')).sort().reverse();
-        resolve(fileNames.slice(0, maxFiles));
-      });
-    }).on('error', reject);
-  });
+export async function fetchAvailableAtcFilesFromR2(stationPath: string): Promise<string[]> {
+  try {
+    const apiUrl = process.env.CLOUDFLARE_API_URL;
+    const accessKeyId = process.env.CLOUDFLARE_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.CLOUDFLARE_SECRET_ACCESS_KEY;
+    const bucketName = process.env.CLOUDFLARE_BUCKET_NAME;
+    const maxFiles = Number(process.env.ATC_RECORDS_COUNT || '24');
+
+    if (!apiUrl) {
+      throw new Error('CLOUDFLARE_API_URL environment variable is not set');
+    }
+
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error('Cloudflare R2 credentials are not configured');
+    }
+
+    if (!bucketName) {
+      throw new Error('CLOUDFLARE_BUCKET_NAME environment variable is not set');
+    }
+
+    console.log(`Fetching ATC files for station: ${stationPath} from R2 bucket`);
+
+    // Create an S3 client configured to use Cloudflare R2
+    const s3Client = new S3Client({
+      region: 'auto', // Cloudflare R2 uses 'auto' region
+      endpoint: apiUrl,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    });
+
+    // Create a ListObjectsV2Command to list objects with the stationPath prefix
+    const command = new ListObjectsV2Command({
+      Bucket: bucketName,
+      Prefix: stationPath + '/',
+      MaxKeys: maxFiles * 2, // Fetch more than needed to ensure we have enough after filtering
+    });
+
+    const response = await s3Client.send(command);
+
+    if (!response.Contents || response.Contents.length === 0) {
+      console.log(`No files found for station: ${stationPath}`);
+      return [];
+    }
+
+    // Extract filenames, filter for .opus files, sort in reverse chronological order
+    const fileNames = response.Contents
+      .map(item => item.Key?.split('/').pop() || '') // Get just the filename
+      .filter(filename => filename && filename.endsWith('.opus'))
+      .sort()
+      .reverse();
+
+    console.log(`Found ${fileNames.length} audio files for station: ${stationPath}`);
+
+    // Return limited number of files
+    return fileNames.slice(0, maxFiles);
+  } catch (error) {
+    console.error('Error fetching ATC files from R2:', error);
+    throw error;
+  }
 }

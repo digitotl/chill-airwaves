@@ -13,8 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     }
   },
   verifyShare: (url: string) => ipcRenderer.invoke('verify-share', url),
-  fetchAvailableAtcFiles: (cdnUrl: string, directoryPath: string, maxFiles: number) =>
-    ipcRenderer.invoke('atc:fetchAvailableFiles', { cdnUrl, directoryPath, maxFiles })
+  fetchAvailableAtcFiles: (stationPath: string) =>
+    ipcRenderer.invoke('atc:fetchAvailableFiles', { stationPath })
 });
 
 

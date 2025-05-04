@@ -37,13 +37,11 @@ export class AtcApiService {
    * Fetches available ATC audio files from the storage bucket for a specific airport
    * @param airport The airport to get audio files for
    * @param cdnUrl The base CDN URL
-   * @param maxFiles Maximum number of files to retrieve (defaults to ATC_RECORDS_COUNT)
    * @returns Promise that resolves to array of available file URLs
    */
   static async fetchAvailableFiles(
     airport: Airport,
-    cdnUrl: string,
-    maxFiles = ATC_RECORDS_COUNT
+    cdnUrl: string
   ): Promise<string[]> {
     try {
       if (!cdnUrl) {
@@ -51,14 +49,14 @@ export class AtcApiService {
       }
 
       // Construct the airport's directory path
-      const directoryPath = `${airport.icao}_${airport.stations[0].path}`;
+      const stationPath = `${airport.icao}_${airport.stations[0].path}`;
 
       // Use Electron API to fetch available files via main process (no CORS)
-      const fileNames = await (window as any).electronAPI.fetchAvailableAtcFiles(cdnUrl, directoryPath, maxFiles);
+      const fileNames = await (window as any).electronAPI.fetchAvailableAtcFiles(stationPath);
 
       // Convert to direct CDN URLs
       return fileNames.map((fileName: string) =>
-        `${cdnUrl}/${directoryPath}/${fileName}`
+        `${cdnUrl}/${stationPath}/${fileName}`
       );
     } catch (error) {
       console.error('Error fetching available ATC files:', error);
@@ -145,7 +143,7 @@ export class AtcApiService {
 
     try {
       // Fetch available files
-      const availableFiles = await this.fetchAvailableFiles(airport, cdnUrl, recordsCount);
+      const availableFiles = await this.fetchAvailableFiles(airport, cdnUrl);
       console.log('Available files:', availableFiles);
       if (availableFiles.length > 0) {
         console.log(`Found ${availableFiles.length} available ATC files for ${airport.icao}`);

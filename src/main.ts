@@ -151,8 +151,8 @@ const createWindow = () => {
 
   ipcMain.handle('verify-share', verifyShare);
 
-  ipcMain.handle('atc:fetchAvailableFiles', async (_event, { cdnUrl, directoryPath, maxFiles }) => {
-    return fetchAvailableAtcFilesFromR2(cdnUrl, directoryPath, maxFiles);
+  ipcMain.handle('atc:fetchAvailableFiles', async (_event, { stationPath }) => {
+    return fetchAvailableAtcFilesFromR2(stationPath);
   });
 
   const gotTheLock = app.requestSingleInstanceLock()

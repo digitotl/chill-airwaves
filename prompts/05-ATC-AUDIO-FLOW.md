@@ -9,8 +9,8 @@
 
     - The listener middleware detects the `setSelectedAirportIata` action.
     - It first attempts to use `AtcApiService.buildAtcPlaylistFromAvailable`, which:
-      - Makes a request to the R2 storage bucket using the S3-compatible list-objects API (`?list-type=2`)
-      - Parses the XML response to extract available audio file names
+      - Makes a request to the R2 storage bucket using AWS SDK S3 client
+      - Retrieves a list of available files from the bucket
       - Sorts them by name (reverse chronological order)
       - Creates direct URLs to the Cloudflare CDN
     - If the request fails or returns no files, it falls back to the original `AtcApiService.buildAtcPlaylist`, which:
@@ -20,10 +20,15 @@
 
 3.  **ATC file listing (playlist generation) uses an IPC-based flow:**
 
-    - The renderer calls `window.electronAPI.fetchAvailableAtcFiles` (exposed in `preload.ts`).
+    - The renderer calls `window.electronAPI.fetchAvailableAtcFiles` with the station path (exposed in `preload.ts`).
     - This triggers the `atc:fetchAvailableFiles` IPC handler in the main process (`src/main.ts`).
-    - The handler calls `fetchAvailableAtcFilesFromR2` in `src/services/atcService.ts`, which fetches the file list from the R2 bucket using Node.js (no CORS).
-    - The result is returned to the renderer, which builds the playlist URLs with the CDN base URL.
+    - The handler calls `fetchAvailableAtcFilesFromR2` in `src/services/atcService.ts` with just the station path parameter.
+    - The `fetchAvailableAtcFilesFromR2` function uses AWS SDK S3 client to connect to Cloudflare R2:
+      - It gets connection details (endpoint, credentials, bucket name) from environment variables
+      - Creates an S3 client configured for Cloudflare R2
+      - Uses ListObjectsV2Command to retrieve objects with the station path as prefix
+      - Filters for .opus files and returns them sorted in reverse chronological order
+    - The result is returned to the renderer, which builds the complete playlist URLs by combining the CDN base URL with the station path and file names.
     - **Direct fetch from the renderer/browser is not used for R2 file listing due to CORS restrictions.**
 
 4.  **Protocol Handlers for Audio Content:**
