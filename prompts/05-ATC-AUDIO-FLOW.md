@@ -34,9 +34,8 @@
 4.  **Protocol Handlers for Audio Content:**
 
     - The application provides two protocol handlers for accessing remote content:
-      - `atc://` protocol: Accesses ATC audio content from multiple sources:
-        - `atc://path/file.opus` or `atc://cdn/path/file.opus`: Retrieves from Cloudflare R2 CDN (CLOUDFLARE_CDN_URL).
-        - `atc://live/path/file.opus`: Retrieves from LiveATC archive (LIVE_ATC_URL).
+      - `atc://` protocol: Accesses ATC audio content from Cloudflare R2 CDN
+        - `atc:///path/to/file.opus`: Direct retrieval from Cloudflare R2 CDN (CLOUDFLARE_CDN_URL)
       - `cdn://` protocol: General purpose CDN access for any asset stored in the R2 storage. Maps `cdn://path/file.ext` to the Cloudflare R2 CDN URL.
     - Both protocols are registered and handled in the main process using Electron's `protocol.handle()` method.
     - The handlers use Electron's `net.fetch()` to bypass CORS restrictions when accessing the remote sources.

@@ -17,9 +17,9 @@ export class AtcApiService {
       const stationPath = `${airport.icao}_${airport.stations[0].path}`;
 
       // Use Electron API to fetch available files via main process (no CORS)
-      const fileNames = await (window as any).electronAPI.fetchAvailableAtcFiles(stationPath);
+      const fileNames = await window.electronAPI.fetchAvailableAtcFiles(stationPath);
 
-      // Convert to direct CDN URLs
+      // Convert to direct ATC protocol URLs
       return fileNames.map((fileName: string) =>
         `${ATC_PROTOCOL}${stationPath}/${fileName}`
       );
