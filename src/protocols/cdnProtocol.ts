@@ -21,7 +21,11 @@ export const cdnProtocolHandler = async (request: GlobalRequest): Promise<Respon
 
   // Extract the path part from the cdn:// URL - skip protocol + ://
   const remoteFilePath = request.url.substring(CDN_PROTOCOL.length + 3);
-  const remoteFileUrl = `${CDN_URL}/${remoteFilePath}`; // Construct URL with CDN base
+
+  // Ensure baseUrl ends with a forward slash
+  const baseUrl = CDN_URL.endsWith('/') ? CDN_URL : `${CDN_URL}/`;
+
+  const remoteFileUrl = `${baseUrl}${remoteFilePath}`; // Construct URL with CDN base
 
   Logger.info(`Proxying CDN request for: ${request.url} to ${remoteFileUrl}`, "cdn-protocol");
 

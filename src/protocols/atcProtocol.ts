@@ -22,7 +22,9 @@ export const atcProtocolHandler = async (request: GlobalRequest): Promise<Respon
 
   // Extract the path part from the atc:// URL
   const pathPart = request.url.substring(ATC_PROTOCOL_NAME.length + 3);
-  const baseUrl = CDN_URL;
+  
+  // Ensure baseUrl ends with a forward slash
+  const baseUrl = CDN_URL.endsWith('/') ? CDN_URL : `${CDN_URL}/`;
 
   const remoteFileUrl = `${baseUrl}${pathPart}`;
 
