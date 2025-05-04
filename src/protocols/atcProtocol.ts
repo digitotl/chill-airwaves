@@ -2,7 +2,7 @@ import { config } from "dotenv";
 import { net } from "electron";
 import { Logger } from "../app/utils/logger";
 
-const ATC_PROTOCOL = 'atc';
+const ATC_PROTOCOL_NAME = 'atc';
 
 config({ path: '.env' });
 
@@ -28,7 +28,7 @@ export const atcProtocolHandler = async (request: GlobalRequest): Promise<Respon
   }
 
   // Extract the path part from the atc:// URL
-  let pathPart = request.url.substring(ATC_PROTOCOL.length + 3);
+  let pathPart = request.url.substring(ATC_PROTOCOL_NAME.length + 3);
   let baseUrl = CDN_URL; // Default to CDN
 
   // Check if the URL specifies a source (cdn: or live:)
@@ -43,7 +43,7 @@ export const atcProtocolHandler = async (request: GlobalRequest): Promise<Respon
     Logger.debug(`Using CDN source for: ${pathPart}`, "atc-protocol");
   }
 
-  const remoteFileUrl = `${baseUrl}/${pathPart}`;
+  const remoteFileUrl = `${baseUrl}${pathPart}`;
 
   Logger.info(`Proxying ATC request for: ${request.url} to ${remoteFileUrl}`, "atc-protocol");
 
