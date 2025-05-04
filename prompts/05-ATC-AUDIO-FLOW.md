@@ -26,20 +26,31 @@
     - The result is returned to the renderer, which builds the playlist URLs with the CDN base URL.
     - **Direct fetch from the renderer/browser is not used for R2 file listing due to CORS restrictions.**
 
-4.  **Audio Playback Request (`src/app/components/radio/Radar.tsx`):**
+4.  **Protocol Handlers for Audio Content:**
+
+    - The application provides two protocol handlers for accessing remote content:
+      - `atc://` protocol: Accesses ATC audio content from multiple sources:
+        - `atc://path/file.opus` or `atc://cdn/path/file.opus`: Retrieves from Cloudflare R2 CDN (CLOUDFLARE_CDN_URL).
+        - `atc://live/path/file.opus`: Retrieves from LiveATC archive (LIVE_ATC_URL).
+      - `cdn://` protocol: General purpose CDN access for any asset stored in the R2 storage. Maps `cdn://path/file.ext` to the Cloudflare R2 CDN URL.
+    - Both protocols are registered and handled in the main process using Electron's `protocol.handle()` method.
+    - The handlers use Electron's `net.fetch()` to bypass CORS restrictions when accessing the remote sources.
+    - Protocol handlers are defined in `src/protocols/atcProtocol.ts` and `src/protocols/cdnProtocol.ts`.
+
+5.  **Audio Playback Request (`src/app/components/radio/Radar.tsx`):**
 
     - The `Radar` component gets the `currentAtcTrack` (a direct CDN URL) from the Redux store via the `getCurrentAtcTrack` selector.
     - It maintains a reference to the previous source URL to avoid unnecessary reloading.
     - It tracks source changes via a useEffect and only updates the audio element's src attribute when it actually changes.
     - The component uses proper event handlers to manage the audio element lifecycle.
 
-5.  **Direct Audio Streaming:**
+6.  **Direct Audio Streaming:**
 
     - The browser's `<audio>` element directly streams audio from the Cloudflare CDN URLs.
-    - No custom protocol handling or proxying is needed.
-    - The audio is loaded and played using standard web APIs without any intermediary proxying.
+    - Alternatively, custom protocol URLs (`atc://` or `cdn://`) can be used for accessing content through the protocol handlers.
+    - The audio is loaded and played using standard web APIs, with protocol handlers providing proxied access when needed.
 
-6.  **Audio Playback & Visualization (`src/app/components/radio/Radar.tsx`, `AtcAnimation.tsx`):**
+7.  **Audio Playback & Visualization (`src/app/components/radio/Radar.tsx`, `AtcAnimation.tsx`):**
     - The `<audio>` element in `Radar.tsx` plays the ATC audio directly from the CDN.
     - The `Radar` component handles audio events:
       - `onTrackEnd`, `onTrackError`: Dispatch `nextTrack` action to Redux to advance the playlist.

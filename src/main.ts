@@ -6,6 +6,8 @@ import installExtension, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electro
 import fs from 'fs';
 import { verifyShare } from './helpers/verifyShare';
 import { fetchAvailableAtcFilesFromR2 } from './services/atcService';
+import { atcProtocolHandler } from './protocols/atcProtocol';
+import { cdnProtocolHandler } from './protocols/cdnProtocol';
 
 config({ path: '.env' });
 
@@ -163,6 +165,10 @@ const createWindow = () => {
     console.log(process.env[key]);
     return process.env[key];
   });
+
+  // Register protocol handlers
+  protocol.handle('atc', atcProtocolHandler);
+  protocol.handle('cdn', cdnProtocolHandler);
 
   protocol.handle('icon', async (request) => {
     const url = new URL(request.url);
