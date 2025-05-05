@@ -1,31 +1,36 @@
 # 12. Error Handling
 
-- **Redux-Based Error Management**:
+## Overall approach
 
-  - Centralized in Redux app state slice with an `errors` array and actions like `addError` and `clearErrors`.
-  - Allows consistent error tracking and display across the application.
+- **Try-catch blocks**: Used throughout the application to catch and handle exceptions gracefully.
+- **Console logging**: Error details are logged to help diagnose issues during development.
+- **User-facing error messages**: Friendly error messages are displayed to users when appropriate.
+- **Service/Component-level error handling**: Each major subsystem implements its own error handling strategy.
 
-- **React Error Boundaries**:
+## Specific Error Handling Strategies
 
-  - Implementation in `ErrorBoundary.tsx` to catch and handle React component rendering errors.
-  - Prevents entire application crashes when a component fails.
+### Main Process
 
-- **Logging System**:
+- **Protocol Registration**: Safely handles protocol registration failures.
+- **Main Window Creation**: Handles errors during window creation and loading.
+- **IPC Communication**: Wraps IPC handlers in try-catch blocks to prevent crashes.
+- **Module Availability**: Uses conditional imports and try-catch for platform-specific modules like `electron-squirrel-startup`.
 
-  - Structured logger via `logger.ts` utility with support for different log levels (`DEBUG`, `INFO`, `WARN`, `ERROR`).
-  - Provides context-based logging for better debugging capabilities.
+### Renderer Process
 
-- **YouTube-Specific Error Handling**:
+- **React Error Boundaries**: Prevent entire UI crashes when components fail.
+- **API Calls**: All API calls use proper error handling to show appropriate UI feedback.
+- **Audio Processing**: Errors in audio processing are caught and reported without disrupting playback.
 
-  - `youtubeErrorHandler.ts` for handling YouTube API and player-specific errors.
-  - Maps error codes to meaningful messages and recovery actions.
+### Services
 
-- **Network Error Management**:
+- **ATC Service**: Handles network failures, corrupted files, and API errors.
+- **Cache Service**: Manages filesystem errors and handles storage limitations.
+- **Audio Service**: Gracefully handles playback and processing errors.
 
-  - Graceful fallbacks when ATC audio streams fail to load.
-  - Automatic playlist advancement on errors via `onTrackError` handlers.
+## Crash Recovery
 
-- **Input Validation**:
-  - Client-side validation for user inputs and share links via `verifyShare` helper.
+- The application attempts to restore state when possible after unexpected errors.
+- User preferences and session data are saved regularly to minimize data loss.
 
 [Back to Architecture Overview](./00-ARCHITECTURE-OVERVIEW.md)

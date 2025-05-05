@@ -7,15 +7,27 @@ export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'build'>;
   const { forgeConfigSelf } = forgeEnv;
   const define = getBuildDefine(forgeEnv);
+
+  // Create a modified external list that doesn't include these dependencies
+  // This will ensure they are bundled with the app
+  const modifiedExternal = external.filter(dep =>
+    dep !== 'dotenv' &&
+    dep !== 'axios' &&
+    dep !== 'cheerio' &&
+    dep !== 'uuid' &&
+    dep !== 'electron-squirrel-startup' &&
+    !dep.startsWith('@aws-sdk/')
+  );
+
   const config: UserConfig = {
     build: {
       lib: {
-        entry: forgeConfigSelf.entry!,
+        entry: forgeConfigSelf.entry || '',
         fileName: () => '[name].js',
         formats: ['cjs'],
       },
       rollupOptions: {
-        external,
+        external: modifiedExternal,
       },
     },
     plugins: [pluginHotRestart('restart')],

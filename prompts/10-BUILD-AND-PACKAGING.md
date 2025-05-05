@@ -1,6 +1,7 @@
 # 10. Build and Packaging
 
 - **Vite (`vite.*.config.ts`, `vite.base.config.ts`):** Used via `@electron-forge/plugin-vite` to bundle the TypeScript code for the main process, preload script, and renderer process separately.
+  - In `vite.main.config.ts`, specific dependencies (dotenv, axios, cheerio, uuid, electron-squirrel-startup, and AWS SDK packages) are explicitly included in the bundle by removing them from the `external` dependencies list. This ensures these packages are available in the production build.
 
 - **Electron Forge (`forge.config.ts`, `package.json` scripts):**
   - `npm start` / `yarn start`: Runs the app in development mode with hot reloading.

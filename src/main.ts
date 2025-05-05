@@ -8,6 +8,7 @@ import { verifyShare } from './helpers/verifyShare';
 import { fetchAvailableAtcFilesFromR2 } from './services/atcService';
 import { atcProtocolHandler } from './protocols/atcProtocol';
 import { cdnProtocolHandler } from './protocols/cdnProtocol';
+import electronSquirrelStartup from 'electron-squirrel-startup';
 
 config({ path: '.env' });
 
@@ -64,10 +65,14 @@ if (process.defaultApp) {
   app.setAsDefaultProtocolClient(APP_PROTOCOL)
 }
 
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit();
+// Use try/catch to handle cases where the module may not be available (non-Windows platforms)
+try {
+  if (isWindows && electronSquirrelStartup) {
+    app.quit();
+  }
+} catch (error) {
+  console.log('electron-squirrel-startup not available, skipping Windows installation events handling');
 }
 
 const createWindow = () => {
