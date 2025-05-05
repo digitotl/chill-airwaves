@@ -37,7 +37,6 @@ export const Radar: React.FC<RadarProps> = ({ airport, atcSource, onTrackEnd, on
 
     const logEvent = (event: Event) => {
       // Log event type and key audio element state
-      // @ts-ignore
       const err = audio.error ? `${audio.error.code}: ${audio.error.message || ''}` : 'none';
       console.log(`[ATC Audio] Event: ${event.type}`, {
         src: audio.src,
