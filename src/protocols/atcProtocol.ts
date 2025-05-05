@@ -8,7 +8,7 @@ config({ path: '.env' });
 
 /**
  * Protocol handler for atc:// URLs that proxies requests to Cloudflare R2 CDN
- * Format: atc:///path/to/file.opus
+ * Format: atc:///path/to/file.mp3
  * @param request The incoming request with atc:// protocol
  * @returns Response from the CDN source
  */
@@ -41,7 +41,7 @@ export const atcProtocolHandler = async (request: GlobalRequest): Promise<Respon
       return new Response(`Failed to fetch resource: ${response.statusText}`, {
         status: response.status,
         statusText: response.statusText,
-        headers: { 'Content-Type': 'audio/opus' }
+        headers: { 'Content-Type': 'audio/mpeg' }
       });
     }
 

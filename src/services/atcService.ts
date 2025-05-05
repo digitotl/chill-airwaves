@@ -61,14 +61,14 @@ export async function fetchAvailableAtcFilesFromR2(stationPath: string): Promise
       return [];
     }
 
-    // Extract filenames, filter for .opus files, sort in reverse chronological order
+    // Extract filenames, filter for .mp3 files instead of .opus, sort in reverse chronological order
     const fileNames = response.Contents
       .map(item => item.Key?.split('/').pop() || '') // Get just the filename
-      .filter(filename => filename && filename.endsWith('.opus'))
+      .filter(filename => filename && filename.endsWith('.mp3'))
       .sort()
       .reverse();
 
-    console.log(`Found ${fileNames.length} audio files for station: ${stationPath}`);
+    console.log(`Found ${fileNames.length} MP3 audio files for station: ${stationPath}`);
 
     // Return limited number of files
     return fileNames.slice(0, maxFiles);

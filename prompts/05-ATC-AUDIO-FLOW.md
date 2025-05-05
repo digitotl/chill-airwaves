@@ -27,7 +27,7 @@
       - It gets connection details (endpoint, credentials, bucket name) from environment variables
       - Creates an S3 client configured for Cloudflare R2
       - Uses ListObjectsV2Command to retrieve objects with the station path as prefix
-      - Filters for .opus files and returns them sorted in reverse chronological order
+      - Filters for .mp3 files and returns them sorted in reverse chronological order
     - The result is returned to the renderer, which builds the complete playlist URLs by combining the CDN base URL with the station path and file names.
     - **Direct fetch from the renderer/browser is not used for R2 file listing due to CORS restrictions.**
 
@@ -35,7 +35,7 @@
 
     - The application provides two protocol handlers for accessing remote content:
       - `atc://` protocol: Accesses ATC audio content from Cloudflare R2 CDN
-        - `atc:///path/to/file.opus`: Direct retrieval from Cloudflare R2 CDN (CLOUDFLARE_CDN_URL)
+        - `atc:///path/to/file.mp3`: Direct retrieval from Cloudflare R2 CDN (CLOUDFLARE_CDN_URL)
       - `cdn://` protocol: General purpose CDN access for any asset stored in the R2 storage. Maps `cdn://path/file.ext` to the Cloudflare R2 CDN URL.
     - Both protocols are registered and handled in the main process using Electron's `protocol.handle()` method.
     - The handlers use Electron's `net.fetch()` to bypass CORS restrictions when accessing the remote sources.
