@@ -22,7 +22,7 @@ export const atcProtocolHandler = async (request: GlobalRequest): Promise<Respon
 
   // Extract the path part from the atc:// URL
   const pathPart = request.url.substring(ATC_PROTOCOL_NAME.length + 3);
-  
+
   // Ensure baseUrl ends with a forward slash
   const baseUrl = CDN_URL.endsWith('/') ? CDN_URL : `${CDN_URL}/`;
 
@@ -41,7 +41,7 @@ export const atcProtocolHandler = async (request: GlobalRequest): Promise<Respon
       return new Response(`Failed to fetch resource: ${response.statusText}`, {
         status: response.status,
         statusText: response.statusText,
-        headers: { 'Content-Type': 'text/plain' }
+        headers: { 'Content-Type': 'audio/opus' }
       });
     }
 

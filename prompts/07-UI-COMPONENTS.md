@@ -28,6 +28,7 @@
   - Integrates `ATCGridSquare` and `AtcAnimation` for visuals.
   - Shows airport details (IATA, city, country, local time via `LiveUTCClock`).
   - Includes the ATC volume control (`HiddenVolumeSlider`).
+  - **Debugging:** Logs all major audio element events and state (src, readyState, networkState, error, currentTime, duration) to the console for troubleshooting ATC audio issues.
 
 - **`musicPlayer/MusicPlayer.tsx`:** Controls and displays music playback.
 

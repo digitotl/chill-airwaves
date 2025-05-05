@@ -30,6 +30,33 @@ export const Radar: React.FC<RadarProps> = ({ airport, atcSource, onTrackEnd, on
     }
   }, [volume]);
 
+  // Debug: log audio element events and state
+  useEffect(() => {
+    const audio = audioElementRef.current;
+    if (!audio) return;
+
+    const logEvent = (event: Event) => {
+      // Log event type and key audio element state
+      // @ts-ignore
+      const err = audio.error ? `${audio.error.code}: ${audio.error.message || ''}` : 'none';
+      console.log(`[ATC Audio] Event: ${event.type}`, {
+        src: audio.src,
+        readyState: audio.readyState,
+        networkState: audio.networkState,
+        error: err,
+        currentTime: audio.currentTime,
+        duration: audio.duration,
+      });
+    };
+    const events = [
+      'loadstart', 'canplay', 'canplaythrough', 'play', 'pause', 'ended', 'error', 'stalled', 'suspend', 'waiting', 'abort', 'emptied', 'loadeddata', 'loadedmetadata', 'seeking', 'seeked', 'volumechange', 'ratechange', 'durationchange', 'progress'
+    ];
+    events.forEach(evt => audio.addEventListener(evt, logEvent));
+    return () => {
+      events.forEach(evt => audio.removeEventListener(evt, logEvent));
+    };
+  }, [atcSource]);
+
   // Track source changes to avoid unnecessary reloads
   useEffect(() => {
     if (atcSource && atcSource !== lastSourceRef.current) {
@@ -53,6 +80,11 @@ export const Radar: React.FC<RadarProps> = ({ airport, atcSource, onTrackEnd, on
   // Handle errors gracefully
   const handleError = (e: React.SyntheticEvent<HTMLAudioElement>) => {
     console.error(`Audio element error for ${atcSource}:`, e);
+    if (audioElementRef.current && audioElementRef.current.error) {
+      const errorCode = audioElementRef.current.error.code;
+      const errorMessage = audioElementRef.current.error.message || 'Unknown error';
+      console.error(`Audio error code: ${errorCode}, message: ${errorMessage}`);
+    }
     if (onTrackError) onTrackError();
   };
 
