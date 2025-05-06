@@ -24,6 +24,20 @@
     - `VITE_GOOGLE_CLIENT_ID`
     - `VITE_LIVE_ATC_URL`
 
+- **Development/Production Environment Controls:**
+
+  - **DevTools Access:**
+
+    - Automatically opens in development mode for debugging (`!app.isPackaged`)
+    - Completely restricted in production through multiple mechanisms:
+      - DevTools disabled in WebPreferences
+      - DevTools menu items removed from View menu
+      - Force-close of DevTools if opened through alternative means
+      - Keyboard shortcuts disabled
+    - This ensures end users cannot inspect or modify the application in production
+
+  - **Environment Validation:** The app performs validation of required environment variables on startup and displays a dialog if any are missing.
+
 - **`tailwind.config.js`, `postcss.config.js`:** Configuration for Tailwind CSS and PostCSS. Themes are applied dynamically by setting CSS variables defined here (`--color-primary`, etc.).
 
 - **`forge.config.ts`:** Configuration for Electron Forge, defining packaging options, makers (for different OS installers), and the Vite plugin setup for building main, preload, and renderer code.

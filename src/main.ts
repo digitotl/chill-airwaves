@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, protocol, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, protocol, shell, Menu } from 'electron';
 import path from 'path';
 import os from 'os';
 import installExtension, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
@@ -118,6 +118,8 @@ const createWindow = () => {
     icon: path.join(getIconPath(), os.platform() === 'darwin' ? 'mac/icon.icns' : os.platform() === 'win32' ? 'win/icon.ico' : 'png/512x512.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      // Disable devtools in production
+      devTools: !app.isPackaged
     },
   });
 
@@ -164,8 +166,10 @@ const createWindow = () => {
     }
   });
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // Open the DevTools only in development mode
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools();
+  }
 
   // Cleanup when window is closed
   mainWindow.on('closed', () => {

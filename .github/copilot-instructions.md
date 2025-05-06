@@ -5,3 +5,4 @@
 - Use typescript types when you can.
 - Respect the typescript rules.
 - take into account that the app is built with Electron Forge with vite typescript setup made with npx create-electron-app@latest my-new-app --template=vite-typescript and act in accordance with it
+- use imports instad of required
