@@ -58,6 +58,12 @@ const config: ForgeConfig = {
       [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
+    {
+      name: '@electron-forge/plugin-electronegativity',
+      config: {
+        isSarif: true
+      }
+    }
   ],
 };
 

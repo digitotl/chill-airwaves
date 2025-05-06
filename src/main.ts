@@ -9,6 +9,34 @@ import { atcProtocolHandler } from './protocols/atcProtocol';
 import { cdnProtocolHandler } from './protocols/cdnProtocol';
 import electronSquirrelStartup from 'electron-squirrel-startup';
 
+// Define required environment variables
+const REQUIRED_ENV_VARS = [
+  'VITE_ASSETS_SERVER_URL',
+  'VITE_CLOUDFLARE_CDN_URL',
+  'VITE_CLOUDFLARE_API_URL',
+  'VITE_CLOUDFLARE_ACCESS_KEY_ID',
+  'VITE_CLOUDFLARE_SECRET_ACCESS_KEY',
+  'VITE_CLOUDFLARE_BUCKET_NAME',
+  'VITE_YOUTUBE_PLAYLIST_ID',
+  'VITE_GOOGLE_CLIENT_ID',
+  'VITE_LIVE_ATC_URL',
+];
+
+/**
+ * Validates required environment variables
+ * @returns {string[]} List of missing environment variables
+ */
+const validateEnvironmentVariables = (): string[] => {
+  const missingVars: string[] = [];
+
+  for (const envVar of REQUIRED_ENV_VARS) {
+    if (!import.meta.env[envVar]) {
+      missingVars.push(envVar);
+    }
+  }
+
+  return missingVars;
+};
 
 // Keep a global reference of the window object to prevent garbage collection
 let mainWindow: BrowserWindow | null = null;
@@ -216,7 +244,22 @@ const createWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  // Check for missing environment variables
+  const missingEnvVars = validateEnvironmentVariables();
+
+  if (missingEnvVars.length > 0) {
+    dialog.showErrorBox(
+      'Missing Environment Variables',
+      `The following required environment variables are missing:\n\n${missingEnvVars.join('\n')}\n\nPlease check your .env file and restart the application.`
+    );
+
+    // Continue with app startup, but log the warning
+    console.warn('Application started with missing environment variables:', missingEnvVars);
+  }
+
+  createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

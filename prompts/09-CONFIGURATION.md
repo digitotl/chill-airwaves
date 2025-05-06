@@ -6,6 +6,18 @@
 
 - **`.env`:** Stores environment-specific variables like `VITE_CLOUDFLARE_CDN_URL` and `VITE_GOOGLE_CLIENT_ID`. Accessed securely via `ipcMain` and `preload.ts`.
 
+  - **Environment Validation:** The app performs validation of required environment variables on startup and displays a dialog if any are missing.
+  - **Required Variables:**
+    - `VITE_ASSETS_SERVER_URL`
+    - `VITE_CLOUDFLARE_CDN_URL`
+    - `VITE_CLOUDFLARE_API_URL`
+    - `VITE_CLOUDFLARE_ACCESS_KEY_ID`
+    - `VITE_CLOUDFLARE_SECRET_ACCESS_KEY`
+    - `VITE_CLOUDFLARE_BUCKET_NAME`
+    - `VITE_YOUTUBE_PLAYLIST_ID`
+    - `VITE_GOOGLE_CLIENT_ID`
+    - `VITE_LIVE_ATC_URL`
+
 - **`tailwind.config.js`, `postcss.config.js`:** Configuration for Tailwind CSS and PostCSS. Themes are applied dynamically by setting CSS variables defined here (`--color-primary`, etc.).
 
 - **`forge.config.ts`:** Configuration for Electron Forge, defining packaging options, makers (for different OS installers), and the Vite plugin setup for building main, preload, and renderer code.

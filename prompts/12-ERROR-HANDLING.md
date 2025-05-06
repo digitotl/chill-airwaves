@@ -15,6 +15,7 @@
 - **Main Window Creation**: Handles errors during window creation and loading.
 - **IPC Communication**: Wraps IPC handlers in try-catch blocks to prevent crashes.
 - **Module Availability**: Uses conditional imports and try-catch for platform-specific modules like `electron-squirrel-startup`.
+- **Environment Variable Validation**: Checks for required environment variables at startup and shows a dialog for missing ones.
 
 ### Renderer Process
 
