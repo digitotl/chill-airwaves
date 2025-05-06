@@ -17,14 +17,14 @@ export function formatAirportPath(airportIcao: string, station: Station) {
  */
 export async function fetchAvailableAtcFilesFromR2(stationPath: string): Promise<string[]> {
   try {
-    const apiUrl = process.env.CLOUDFLARE_API_URL;
-    const accessKeyId = process.env.CLOUDFLARE_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.CLOUDFLARE_SECRET_ACCESS_KEY;
-    const bucketName = process.env.CLOUDFLARE_BUCKET_NAME;
+    const apiUrl = process.env.VITE_CLOUDFLARE_API_URL;
+    const accessKeyId = process.env.VITE_CLOUDFLARE_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.VITE_CLOUDFLARE_SECRET_ACCESS_KEY;
+    const bucketName = process.env.VITE_CLOUDFLARE_BUCKET_NAME;
     const maxFiles = Number(process.env.ATC_RECORDS_COUNT || '24');
 
     if (!apiUrl) {
-      throw new Error('CLOUDFLARE_API_URL environment variable is not set');
+      throw new Error('VITE_CLOUDFLARE_API_URL environment variable is not set');
     }
 
     if (!accessKeyId || !secretAccessKey) {
@@ -32,7 +32,7 @@ export async function fetchAvailableAtcFilesFromR2(stationPath: string): Promise
     }
 
     if (!bucketName) {
-      throw new Error('CLOUDFLARE_BUCKET_NAME environment variable is not set');
+      throw new Error('VITE_CLOUDFLARE_BUCKET_NAME environment variable is not set');
     }
 
     console.log(`Fetching ATC files for station: ${stationPath} from R2 bucket`);

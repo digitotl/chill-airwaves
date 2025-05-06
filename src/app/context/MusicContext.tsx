@@ -111,7 +111,7 @@ export const MusicProvider: React.FC<MusicProviderProps> = ({ children }) => {
   const [isBuffering, setIsBuffering] = React.useState<boolean>(false);
 
   useEffect(() => {
-    window.electronAPI.getEnv('YOUTUBE_PLAYLIST_ID').then((playlistId: string) => {
+    window.electronAPI.getEnv('VITE_YOUTUBE_PLAYLIST_ID').then((playlistId: string) => {
       setPlaylistId(playlistId);
     })
   }, []);

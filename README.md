@@ -44,9 +44,9 @@ A desktop application that combines lo-fi/ambient music with real-time air traff
 
    ```dotenv
    # Base URL for the ATC audio stream CDN
-   CLOUDFLARE_CDN_URL=https://your-cloudflare-r2-public-url/
+   VITE_CLOUDFLARE_CDN_URL=https://your-cloudflare-r2-public-url/
    # Your Google Client ID for authentication
-   GOOGLE_CLIENT_ID=your-google-client-id
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id
    ```
 
 4. Start the development server:

@@ -4,7 +4,7 @@
 
 - **`audioMotionAnalyzer.ts` (`src/settings/`):** Defines default configuration options (`AUDIO_MOTION_ANALYZER_SETTINGS`) for the `AudioMotionAnalyzer` instance used in `AtcAnimation.tsx`.
 
-- **`.env`:** Stores environment-specific variables like `CLOUDFLARE_CDN_URL` and `GOOGLE_CLIENT_ID`. Accessed securely via `ipcMain` and `preload.ts`.
+- **`.env`:** Stores environment-specific variables like `VITE_CLOUDFLARE_CDN_URL` and `VITE_GOOGLE_CLIENT_ID`. Accessed securely via `ipcMain` and `preload.ts`.
 
 - **`tailwind.config.js`, `postcss.config.js`:** Configuration for Tailwind CSS and PostCSS. Themes are applied dynamically by setting CSS variables defined here (`--color-primary`, etc.).
 

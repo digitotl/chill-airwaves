@@ -13,11 +13,11 @@ config({ path: '.env' });
  * @returns Response from the CDN source
  */
 export const atcProtocolHandler = async (request: GlobalRequest): Promise<Response> => {
-  const CDN_URL = process.env.CLOUDFLARE_CDN_URL;
+  const CDN_URL = process.env.VITE_CLOUDFLARE_CDN_URL;
 
   if (!CDN_URL) {
-    Logger.error("CLOUDFLARE_CDN_URL environment variable is not set.", "atc-protocol");
-    return new Response('Internal Server Error: CLOUDFLARE_CDN_URL not configured', { status: 500 });
+    Logger.error("VITE_CLOUDFLARE_CDN_URL environment variable is not set.", "atc-protocol");
+    return new Response('Internal Server Error: VITE_CLOUDFLARE_CDN_URL not configured', { status: 500 });
   }
 
   // Extract the path part from the atc:// URL
