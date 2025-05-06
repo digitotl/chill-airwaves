@@ -18,10 +18,8 @@ export const Main: FC = () => {
   const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    window.electronAPI.getEnv('VITE_GOOGLE_CLIENT_ID').then((googleClientId: string) => {
-      console.log(googleClientId);
-      setGoogleClientId(googleClientId);
-    });
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    setGoogleClientId(googleClientId);
 
     setTimeout(() => {
       setIsInitialLoading(false);

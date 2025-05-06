@@ -17,10 +17,10 @@ export function formatAirportPath(airportIcao: string, station: Station) {
  */
 export async function fetchAvailableAtcFilesFromR2(stationPath: string): Promise<string[]> {
   try {
-    const apiUrl = process.env.VITE_CLOUDFLARE_API_URL;
-    const accessKeyId = process.env.VITE_CLOUDFLARE_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.VITE_CLOUDFLARE_SECRET_ACCESS_KEY;
-    const bucketName = process.env.VITE_CLOUDFLARE_BUCKET_NAME;
+    const apiUrl = import.meta.env.VITE_CLOUDFLARE_API_URL;
+    const accessKeyId = import.meta.env.VITE_CLOUDFLARE_ACCESS_KEY_ID;
+    const secretAccessKey = import.meta.env.VITE_CLOUDFLARE_SECRET_ACCESS_KEY;
+    const bucketName = import.meta.env.VITE_CLOUDFLARE_BUCKET_NAME;
     const maxFiles = Number(process.env.ATC_RECORDS_COUNT || '24');
 
     if (!apiUrl) {

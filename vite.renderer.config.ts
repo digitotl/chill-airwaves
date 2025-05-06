@@ -28,5 +28,6 @@ export default defineConfig((env) => {
       preserveSymlinks: true,
     },
     clearScreen: false,
+    envPrefix: ['VITE_'],
   } as UserConfig;
 });

@@ -6,7 +6,6 @@ import { ATC_RECORDS_COUNT } from "../../constants/appConstants";
 import { AtcApiService } from "../../services/atcApiService";
 import { addError } from "../appState/appSlice";
 import { Logger } from "../../utils/logger";
-import { EnvironmentService } from "../../services/environmentService";
 
 export const startAppListening = listenerMiddleware.startListening
 

@@ -10,7 +10,6 @@
     - Handles Squirrel startup events (Windows installer) and requests single instance lock.
     - Registers an `icon://` protocol for accessing SVG icons.
     - Sets up IPC handlers for communication with renderer process:
-      - `getEnv`: Returns environment variables to the renderer.
       - `get-downloads-path`: Provides the system downloads directory path.
       - `open-external`: Opens URLs in the default browser.
       - `verify-share`: Validates sharing links.
@@ -36,7 +35,6 @@
 
     - Runs in a privileged context before the renderer process loads.
     - Uses `contextBridge.exposeInMainWorld('electronAPI', ...)` to securely expose specific Electron/Node.js functionalities to the renderer process:
-      - `getEnv`: To fetch environment variables from the main process.
       - `getAtc`: To access ATC data.
       - `shell.openExternal`: To open URLs in the default system browser.
       - `verifyShare`: To verify and validate share links.

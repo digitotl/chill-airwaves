@@ -1,10 +1,8 @@
-import { config } from "dotenv";
 import { net } from "electron";
 import { Logger } from "../app/utils/logger";
 
 const ATC_PROTOCOL_NAME = 'atc';
 
-config({ path: '.env' });
 
 /**
  * Protocol handler for atc:// URLs that proxies requests to Cloudflare R2 CDN
@@ -13,7 +11,7 @@ config({ path: '.env' });
  * @returns Response from the CDN source
  */
 export const atcProtocolHandler = async (request: GlobalRequest): Promise<Response> => {
-  const CDN_URL = process.env.VITE_CLOUDFLARE_CDN_URL;
+  const CDN_URL = import.meta.env.VITE_CLOUDFLARE_CDN_URL;
 
   if (!CDN_URL) {
     Logger.error("VITE_CLOUDFLARE_CDN_URL environment variable is not set.", "atc-protocol");

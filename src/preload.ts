@@ -5,7 +5,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  getEnv: (key: string) => ipcRenderer.invoke('getEnv', key),
   getAtc: (icao: string) => ipcRenderer.invoke('getAtc', icao),
   shell: {
     openExternal: (url: string) => {

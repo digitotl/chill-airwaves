@@ -1,6 +1,5 @@
 import { Airport } from '../../settings/liveatc';
 import { ATC_RECORDS_COUNT } from '../constants/appConstants';
-import { EnvironmentService } from './environmentService';
 
 const ATC_PROTOCOL = 'atc://';
 

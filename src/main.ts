@@ -1,7 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, shell } from 'electron';
 import path from 'path';
 import os from 'os';
-import { config } from "dotenv";
 import installExtension, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import fs from 'fs';
 import { verifyShare } from './helpers/verifyShare';
@@ -10,7 +9,6 @@ import { atcProtocolHandler } from './protocols/atcProtocol';
 import { cdnProtocolHandler } from './protocols/cdnProtocol';
 import electronSquirrelStartup from 'electron-squirrel-startup';
 
-config({ path: '.env' });
 
 // Keep a global reference of the window object to prevent garbage collection
 let mainWindow: BrowserWindow | null = null;
@@ -175,11 +173,6 @@ const createWindow = () => {
       dialog.showErrorBox('Welcome Back', `You arrived from: ${commandLine.pop()}`)
     })
   }
-
-  ipcMain.handle('getEnv', (_, key: string) => {
-    console.log(process.env[key]);
-    return process.env[key];
-  });
 
   // Register protocol handlers
   protocol.handle('atc', atcProtocolHandler);

@@ -23,6 +23,7 @@ export default defineConfig((env) => {
       },
     },
     plugins: [pluginHotRestart('reload')],
+    envPrefix: ['VITE_'],
   };
 
   return mergeConfig(getBuildConfig(forgeEnv), config);

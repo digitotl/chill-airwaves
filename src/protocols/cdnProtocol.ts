@@ -1,10 +1,7 @@
-import { config } from "dotenv";
 import { net } from "electron";
 import { Logger } from "../app/utils/logger";
 
 const CDN_PROTOCOL = 'cdn';
-
-config({ path: '.env' });
 
 /**
  * Protocol handler for cdn:// URLs that proxies requests to Cloudflare R2
@@ -13,7 +10,7 @@ config({ path: '.env' });
  * @returns Response from the Cloudflare R2 storage
  */
 export const cdnProtocolHandler = async (request: GlobalRequest): Promise<Response> => {
-  const CDN_URL = process.env.VITE_CLOUDFLARE_CDN_URL;
+  const CDN_URL = import.meta.env.VITE_CLOUDFLARE_CDN_URL;
   if (!CDN_URL) {
     Logger.error("VITE_CLOUDFLARE_CDN_URL environment variable is not set.", "cdn-protocol");
     return new Response('Internal Server Error: VITE_CLOUDFLARE_CDN_URL not configured', { status: 500 });

@@ -1,7 +1,6 @@
 declare global {
   interface Window {
     electronAPI: {
-      getEnv: (key: string) => Promise<string>;
       verifyShare: (url: string) => Promise<boolean>;
       fetchAvailableAtcFiles: (stationPath: string) => Promise<string[]>;
       shell: {
