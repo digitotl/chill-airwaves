@@ -6,6 +6,9 @@ declare global {
       shell: {
         openExternal: (url: string) => Promise<void>;
       };
+      env: {
+        [key: string]: string | undefined;
+      };
     };
     YT: any;
     onYouTubeIframeAPIReady: () => void;

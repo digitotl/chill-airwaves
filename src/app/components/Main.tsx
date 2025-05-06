@@ -18,8 +18,10 @@ export const Main: FC = () => {
   const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    setGoogleClientId(googleClientId);
+    // Use the exposed environment variables from preload script instead of import.meta.env directly
+    // This ensures it works in both development and production builds
+    const clientId = window.electronAPI.env.VITE_GOOGLE_CLIENT_ID;
+    setGoogleClientId(clientId);
 
     setTimeout(() => {
       setIsInitialLoading(false);
@@ -67,4 +69,4 @@ export const Main: FC = () => {
       </PersistGate>
     </Provider>
   );
-}   
+}

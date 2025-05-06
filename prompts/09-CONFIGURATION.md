@@ -4,7 +4,14 @@
 
 - **`audioMotionAnalyzer.ts` (`src/settings/`):** Defines default configuration options (`AUDIO_MOTION_ANALYZER_SETTINGS`) for the `AudioMotionAnalyzer` instance used in `AtcAnimation.tsx`.
 
-- **`.env`:** Stores environment-specific variables like `VITE_CLOUDFLARE_CDN_URL` and `VITE_GOOGLE_CLIENT_ID`. Accessed securely via `ipcMain` and `preload.ts`.
+- **`.env`:** Stores environment-specific variables like `VITE_CLOUDFLARE_CDN_URL` and `VITE_GOOGLE_CLIENT_ID`. Accessed securely via environment variable handling system.
+
+  - **Environment Variable Handling:** The application uses a secure mechanism to access environment variables:
+
+    - In main process: A `getEnvVar()` utility function handles access to environment variables in both development and production builds.
+    - In renderer process: Environment variables are exposed through the preload script via `window.electronAPI.env`, ensuring compatibility across all build types.
+    - In development: Uses Vite's `import.meta.env`
+    - In production: Falls back to `process.env` for variables that are replaced during build
 
   - **Environment Validation:** The app performs validation of required environment variables on startup and displays a dialog if any are missing.
   - **Required Variables:**
