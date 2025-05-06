@@ -1,6 +1,5 @@
 import { net } from "electron";
 import { Logger } from "../app/utils/logger";
-import { getEnvVar } from "../../src/main";
 
 const ATC_PROTOCOL_NAME = 'atc';
 
@@ -12,7 +11,7 @@ const ATC_PROTOCOL_NAME = 'atc';
  * @returns Response from the CDN source
  */
 export const atcProtocolHandler = async (request: GlobalRequest): Promise<Response> => {
-  const CDN_URL = getEnvVar('VITE_CLOUDFLARE_CDN_URL');
+  const CDN_URL = import.meta.env.VITE_CLOUDFLARE_CDN_URL
 
   if (!CDN_URL) {
     Logger.error("VITE_CLOUDFLARE_CDN_URL environment variable is not set.", "atc-protocol");

@@ -23,17 +23,6 @@ const REQUIRED_ENV_VARS = [
 ];
 
 /**
- * Safely access environment variables in both development and production
- * @param key The environment variable key
- * @returns The environment variable value or undefined
- */
-export const getEnvVar = (key: string): string | undefined => {
-  // In development, import.meta.env is available
-  // In production, these are replaced by Vite with actual values at build time
-  return import.meta.env[key] || process.env[key];
-};
-
-/**
  * Validates required environment variables
  * @returns {string[]} List of missing environment variables
  */
@@ -41,7 +30,7 @@ const validateEnvironmentVariables = (): string[] => {
   const missingVars: string[] = [];
 
   for (const envVar of REQUIRED_ENV_VARS) {
-    if (!getEnvVar(envVar)) {
+    if (!import.meta.env[envVar]) {
       missingVars.push(envVar);
     }
   }
@@ -268,24 +257,6 @@ app.on('ready', () => {
     // Continue with app startup, but log the warning
     console.warn('Application started with missing environment variables:', missingEnvVars);
   }
-
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Welcome to Chill Airwaves',
-    message: `Environment variables are set correctly. Chill Airwaves is ready to go! \n` +
-      `YouTube Playlist ID: ${getEnvVar('VITE_YOUTUBE_PLAYLIST_ID')}\n` +
-      `Google Client ID: ${getEnvVar('VITE_GOOGLE_CLIENT_ID')}\n` +
-      `Live ATC URL: ${getEnvVar('VITE_LIVE_ATC_URL')}\n` +
-      `Assets Server URL: ${getEnvVar('VITE_ASSETS_SERVER_URL')}\n` +
-      `Cloudflare CDN URL: ${getEnvVar('VITE_CLOUDFLARE_CDN_URL')}\n` +
-      `Cloudflare API URL: ${getEnvVar('VITE_CLOUDFLARE_API_URL')}\n` +
-      `Cloudflare Access Key ID: ${getEnvVar('VITE_CLOUDFLARE_ACCESS_KEY_ID')}\n` +
-      `Cloudflare Secret Access Key: ${getEnvVar('VITE_CLOUDFLARE_SECRET_ACCESS_KEY')}\n` +
-      `Cloudflare Bucket Name: ${getEnvVar('VITE_CLOUDFLARE_BUCKET_NAME')}\n`,
-    detail: 'Chill Airwaves is a radio station that plays chill music. Enjoy your stay!',
-    buttons: ['OK'],
-    icon: path.join(getIconPath(), os.platform() === 'darwin' ? 'mac/icon.icns' : os.platform() === 'win32' ? 'win/icon.ico' : 'png/512x512.png'),
-  });
 
   createWindow();
 });

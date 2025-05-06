@@ -20,7 +20,7 @@ export const Main: FC = () => {
   useEffect(() => {
     // Use the exposed environment variables from preload script instead of import.meta.env directly
     // This ensures it works in both development and production builds
-    const clientId = window.electronAPI.env.VITE_GOOGLE_CLIENT_ID;
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     setGoogleClientId(clientId);
 
     setTimeout(() => {

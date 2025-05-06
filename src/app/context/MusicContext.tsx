@@ -112,7 +112,7 @@ export const MusicProvider: React.FC<MusicProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Use electronAPI.env instead of import.meta.env for production compatibility
-    const playlistId = window.electronAPI.env.VITE_YOUTUBE_PLAYLIST_ID;
+    const playlistId = import.meta.env.VITE_YOUTUBE_PLAYLIST_ID;
     setPlaylistId(playlistId);
   }, []);
 

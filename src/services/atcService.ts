@@ -1,7 +1,6 @@
 import { Station } from "../settings/liveatc";
 import dotenv from 'dotenv';
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { getEnvVar } from '../main';
 
 // Load environment variables
 dotenv.config();
@@ -18,11 +17,11 @@ export function formatAirportPath(airportIcao: string, station: Station) {
  */
 export async function fetchAvailableAtcFilesFromR2(stationPath: string): Promise<string[]> {
   try {
-    const apiUrl = getEnvVar('VITE_CLOUDFLARE_API_URL');
-    const accessKeyId = getEnvVar('VITE_CLOUDFLARE_ACCESS_KEY_ID');
-    const secretAccessKey = getEnvVar('VITE_CLOUDFLARE_SECRET_ACCESS_KEY');
-    const bucketName = getEnvVar('VITE_CLOUDFLARE_BUCKET_NAME');
-    const maxFiles = Number(process.env.ATC_RECORDS_COUNT || '24');
+    const apiUrl = import.meta.env.VITE_CLOUDFLARE_API_URL
+    const accessKeyId = import.meta.env.VITE_CLOUDFLARE_ACCESS_KEY_ID
+    const secretAccessKey = import.meta.env.VITE_CLOUDFLARE_SECRET_ACCESS_KEY
+    const bucketName = import.meta.env.VITE_CLOUDFLARE_BUCKET_NAME
+    const maxFiles = Number(import.meta.env.ATC_RECORDS_COUNT || '24');
 
     if (!apiUrl) {
       throw new Error('VITE_CLOUDFLARE_API_URL environment variable is not set');
