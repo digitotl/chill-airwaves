@@ -3,7 +3,7 @@ import { MusicProvider } from "../context/MusicContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Provider } from "react-redux";
 import { persistor, store } from "../store";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom"; // Changed from BrowserRouter to HashRouter
 import { AnimatePresence, motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import { Player } from "./screens/Player";
@@ -41,14 +41,14 @@ export const Main: FC = () => {
           {googleClientId && <GoogleOAuthProvider clientId={googleClientId}>
             {/*<BackgroundImageOverlay backgroundImageUrl="image://alaska.png" />*/}
             <ModalProvider>
-              <BrowserRouter>
+              <HashRouter> {/* Changed from BrowserRouter to HashRouter */}
                 <AnimatePresence mode="wait">
                   <Routes>
                     <Route path="/" element={<Player />} />
                     <Route path="/auth" element={<Login />} />
                   </Routes>
                 </AnimatePresence>
-              </BrowserRouter>
+              </HashRouter>
 
               <Toaster
                 position="bottom-right"

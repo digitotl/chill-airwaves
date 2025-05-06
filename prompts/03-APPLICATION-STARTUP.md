@@ -61,7 +61,7 @@
       - `MusicProvider`: Provides context for music playback.
       - `GoogleOAuthProvider`: Configures Google authentication when client ID is available.
       - `ModalProvider`: Manages modal dialogs.
-      - `BrowserRouter`: Enables React Router.
+      - `HashRouter`: Enables React Router with hash-based routing (better compatibility with Electron).
     - Defines routes for the application:
       - Root path (`/`): Renders the `Player` component.
       - Auth path (`/auth`): Renders the `Login` component.
